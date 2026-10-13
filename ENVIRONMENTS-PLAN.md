@@ -1,4 +1,4 @@
-# Untranslatable: a world of different gestures
+# slop: a world of different gestures
 
 Approved direction, 13 October 2026. Next deliverable: local playable preview.
 
@@ -9,11 +9,15 @@ Approved direction, 13 October 2026. Next deliverable: local playable preview.
 3. **A surprise that draws itself.** A shuffled deck of colour blocks, delicate lines, cut shapes, ribbons, scratches, scattered marks, stacked contours and loose gestures. Avoid immediate family repetition. Draw lines progressively, open colour patches, unfold into depth over roughly 2–3 seconds. Keep anchors fixed. Manual drawings also unfold on release. Pause arrests ambient motion; reduced motion shows the finished trace directly.
 4. **Present the playable result.** Focused behaviour checks for metadata persistence and surprise variety, build, and direct visual inspection of environment changes and release. Preserve existing saved art. Present locally before broader testing or publication.
 
-## Reference interpretation
+## Visual qualities
 
-All eight 13 October Design Atlas profiles are unscored reference seeds, not scored user verdicts: Camille Walala (flat colour rhythm), Adam Nathaniel Furman (relief and alternating repetition), Alex Proba (asymmetric forms and accent), Laura Slater (dry brush and print misregistration), Hattie Stewart (nested contour and playful density, no faces), Rose Wylie (scale and radical empty space, no figures), Marion Deuchars (hand tremor and direct marks), Bastianilk (tender fine line and pastel proximity, no figures or flowers). These are our abstractions from the profiles and inspected reference images, not copied compositions.
-
-Earlier scored anchors: `tezos-dragonfly-31759`, 10/love, fine ghost filaments; `brutalist-leojamesart-com`, 10/love, no written reason, so no invented rationale. Cream ground, drawing, spaciousness and playful colour come directly from Alex's brief.
+Flat colour rhythm, relief and alternating repetition, asymmetric forms,
+dry brush and print misregistration, nested contours, changes in scale,
+hand tremor, fine filaments and nearby pastel colours shape the environments.
+Keep every composition abstract: no faces, figures, flowers or copied artwork.
+Cream ground, drawing, spaciousness and playful colour come directly from
+Alex's brief. Describe the work through its own forms and behaviour; reference
+artists' names do not belong in the source or published documentation.
 
 Lead and native Fable 5.1 independently considered the direction. The verified consultation used the existing Claude Max route and returned the requested primary model. Adopt its relief, scale contrast and surprise-deck ideas. Reject rigid prohibitions on visitors' gestures and a one-world-only prototype: Alex asked for creative freedom and distinct connected environments in this pass. Keep implementation with the lead because world geometry, rendering, local tools and saved metadata are closely coupled.
 

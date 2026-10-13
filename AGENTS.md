@@ -1,7 +1,9 @@
 # Working on slop
 
 Alex named the project slop, with “release your inner child” as its invitation.
-Preserve the existing repository URL, local draft keys and stored identifiers.
+The repository is https://github.com/feralmycelium/slop. Preserve local draft
+keys and stored identifiers. Keep reference artists' names out of code,
+comments, published documentation and downloadable source.
 
 Read DESIGN-CONTRACT.md and PRODUCT.md before changing the experience.
 Alex approved the six-environment spatial direction on 13 October 2026.
