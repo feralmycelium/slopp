@@ -1,6 +1,6 @@
 # One world, many hands
 
-This contract keeps slop recognisable as other people develop it.
+This contract keeps slopp recognisable as other people develop it.
 The maker approved this expanded direction on 13 October 2026.
 
 ## The language — design version 3

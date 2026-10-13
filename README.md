@@ -1,4 +1,4 @@
-# slop
+# slopp
 
 Release your inner child.
 

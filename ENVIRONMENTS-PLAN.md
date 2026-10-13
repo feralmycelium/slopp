@@ -1,4 +1,4 @@
-# slop: a world of different gestures
+# slopp: a world of different gestures
 
 Approved direction, 13 October 2026. Next deliverable: local playable preview.
 

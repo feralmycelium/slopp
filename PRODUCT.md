@@ -1,4 +1,4 @@
-# slop
+# slopp
 
 Release your inner child. Previously called Untranslatable; existing source
 URLs and stored drawing identifiers remain compatible.

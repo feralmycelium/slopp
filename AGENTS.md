@@ -1,7 +1,8 @@
-# Working on slop
+# Working on slopp
 
-Alex named the project slop, with “release your inner child” as its invitation.
-The repository is https://github.com/feralmycelium/slop. Preserve local draft
+Alex named the project slopp (two p’s), with “release your inner child” as its invitation.
+The chosen domain is sloppworld.com; registration and DNS are separate from naming.
+The repository is https://github.com/feralmycelium/slopp. Preserve local draft
 keys and stored identifiers. Keep reference artists' names out of code,
 comments, published documentation and downloadable source.
 
