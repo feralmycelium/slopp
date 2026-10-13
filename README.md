@@ -9,8 +9,6 @@ The spatial renderer uses Three.js 0.186.1 and unlit geometry. A persistent API
 runs on Bun/SQLite locally or a Cloudflare Worker with D1. Drafts stay in the
 browser; published contributions live in the shared database.
 
-Originally Untranslatable. The existing repository URL and stored drawing
-identifiers remain compatible.
 
 ## Run locally
 
