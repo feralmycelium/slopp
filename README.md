@@ -2,8 +2,8 @@
 
 Release your inner child.
 
-A shared world of moving drawings. Explore six connected abstract environments,
-draw into the air, or release a surprise for someone else to find.
+A simple beautiful and abstract world of moving art. Explore six connected abstract environments,
+draw into the air and make your own, leave a abstract message for someone to find. 
 
 The spatial renderer uses Three.js 0.186.1 and unlit geometry. A persistent API
 runs on Bun/SQLite locally or a Cloudflare Worker with D1. Drafts stay in the
