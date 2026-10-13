@@ -1,17 +1,29 @@
-# Working on Untranslatable
+# Working on slop
 
-Read DESIGN-CONTRACT.md before choosing a visual or interaction direction.
-Keep the accepted handwriting, cream paper and three inks. User marks are
-constrained art data, never executable markup. Do not add social dashboards,
-identity systems or arbitrary uploads. A future spatial ambient album layer
-is approved as a direction; this release builds the silent visual foundation.
+Alex named the project slop, with “release your inner child” as its invitation.
+Preserve the existing repository URL, local draft keys and stored identifiers.
 
-Keep changes bounded. Test behavioural changes before implementation. Data
-tests use temporary SQLite databases; never clear the live world to test.
-Client and server rules must agree. Guard spacing/capacity atomically.
+Read DESIGN-CONTRACT.md and PRODUCT.md before changing the experience.
+Alex approved the six-environment spatial direction on 13 October 2026.
+Keep cream ground, entirely abstract drawn forms, small local palettes,
+distinct environments and continuity through borrowed gestures. Drawing and
+exploring are the core. No profiles, social dashboards, chat or uploads.
 
-Observe desktop, phone, keyboard, drawing, publish, independent-client sync,
-draft recovery and reduced-motion behaviour before claiming a visual change
-works. Keep previous records renderable. Do not rewrite applied migrations.
-Public patches must exclude data/, local evidence,
-secrets and dependency/build output.
+The world is Three.js/WebGL, with a shared Web Request API. Keep source in
+src/ and public/; regenerate public/world.js using bun run build. Environment
+definitions and surprise generation are shared through public/environments.js.
+Store space.environment with new drawings. Preserve legacy marks and original
+ink meanings; never rewrite applied database migrations.
+
+Use focused behavioural tests for changed data and interaction rules. Tests
+write to temporary databases, never the visitor preview database. Observe
+the actual rendered result before reporting it ready.
+
+Current ruling: present creative previews before heavy testing. No additional
+security audit or exhaustive review cycle. A local preview is not a public
+deployment. The 13 October release is visual; adaptive sound using Alex's
+existing music library is the next phase, with explicit start and visible mute.
+
+Keep the plan and progress in ENVIRONMENTS-PLAN.md and the local PLAN.md ledger.
+Code is MIT and shared contributions are CC BY 4.0. Preserve the source and
+drawing exports so the work can develop without the original makers.

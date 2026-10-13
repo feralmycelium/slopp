@@ -1,52 +1,59 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
-import {mkdtemp,mkdir,rm} from 'node:fs/promises';
+import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 
-const root=resolve(import.meta.dirname,'..'),tmp=await mkdtemp(tmpdir()+'/manuscript-browser-');
-const server=spawn('bun',['tests/serve.js'],{cwd:root,env:{...process.env,TEST_DATABASE:tmp+'/test.sqlite'},stdio:'ignore'});
-const browser=await chromium.launch({headless:true});
-const errors=[],base='http://127.0.0.1:8771',shots=root+'/.evidence';
-await mkdir(shots,{recursive:true});
+const root=resolve(import.meta.dirname,'..'),tmp=await mkdtemp(tmpdir()+'/slop-browser-');
+const server=spawn('bun',['tests/serve.js'],{cwd:root,env:{...process.env,TEST_DATABASE:tmp+'/test.sqlite'},stdio:'inherit'});
+let browser;
+const errors=[],base='http://127.0.0.1:8771';
 async function visit(context){const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.waitForFunction(()=>window.manuscript?.ready);return p;}
+async function draw(p,x=500,y=390){await p.mouse.move(x,y);await p.mouse.down();await p.mouse.move(x+180,y+60,{steps:20});await p.mouse.move(x+240,y-30,{steps:12});await p.mouse.up();}
 try{
-  for(let i=0;i<50;i++){try{if((await fetch(base+'/api/world')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
-  const a=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),b=await browser.newContext({viewport:{width:1280,height:900}});
-  const p=await visit(a),other=await visit(b);
+  let ready=false;
+  for(let i=0;i<50;i++){try{if((await fetch(base+'/api/world')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
+  assert(ready,'The isolated test server must start.');
+  browser=await chromium.launch({headless:true});
+  const a=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:'reduce'});
+  const p=await visit(a);
   assert.equal(await p.locator('#pause').getAttribute('aria-pressed'),'true');
-  await p.screenshot({path:shots+'/desktop.png'});
-  await p.click('#paper',{position:{x:1100,y:450}});const before=await p.evaluate(()=>({...manuscript.camera}));
-  await p.keyboard.press('ArrowRight');await p.click('#zoom-in');
-  const after=await p.evaluate(()=>({...manuscript.camera}));assert(after.x>before.x&&after.z>before.z);
-  await p.click('#make');await p.click('#add-line');await p.click('[data-ink="blue"]');await p.click('#add-line');
-  await p.click('#undo');assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),1);
+  const still=await p.evaluate(()=>({position:manuscript.world.camera.position.toArray(),time:manuscript.world.state.time}));
+  await p.waitForTimeout(250);
+  assert.deepEqual(await p.evaluate(()=>({position:manuscript.world.camera.position.toArray(),time:manuscript.world.state.time})),still);
+  await p.locator('#world').focus();await p.keyboard.down('ArrowRight');await p.waitForTimeout(150);await p.keyboard.up('ArrowRight');
+  assert((await p.evaluate(()=>manuscript.world.state.yaw))<0,'Keyboard turning must work while paused.');
+  await p.click('#elsewhere');await p.waitForFunction(()=>document.querySelector('#environment-name').textContent==='Soft geometry');
+  await p.click('#make');assert.equal(await p.locator('[data-ink]').count(),4);
+  await p.click('[data-ink="pink"]');await draw(p);await draw(p,560,460);await p.click('#undo');
+  assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),1);
+  const draft=await p.evaluate(()=>structuredClone(manuscript.state.draft));
   await p.route('**/api/marks',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'storage_unavailable',recoverable:true})}));
   await p.click('#leave');await p.waitForFunction(()=>!manuscript.state.saving);
   assert.match(await p.locator('#status').innerText(),/try.*again/i);
-  assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),1);
   await p.unroute('**/api/marks');await p.reload();await p.waitForFunction(()=>manuscript.ready);
-  await p.click('#make');assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),1);
-  await p.click('#thread');await p.mouse.move(500,470);await p.mouse.down();await p.mouse.move(700,520,{steps:24});await p.mouse.up();
-  assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),2);
-  await p.click('#move-trace');const start=await p.evaluate(()=>manuscript.state.draft.x);await p.keyboard.press('ArrowRight');
-  assert((await p.evaluate(()=>manuscript.state.draft.x))>start);
-  await p.screenshot({path:shots+'/making.png'});
-  await p.click('#leave');await p.waitForFunction(()=>manuscript.state.mode==='explore');
-  await other.waitForFunction(()=>manuscript.state.items.length===1,{},{timeout:8000});
-  await p.reload();await p.waitForFunction(()=>manuscript.ready);assert.equal(await p.evaluate(()=>manuscript.state.items.length),1);
-  await p.click('#index-toggle');assert.equal(await p.locator('#passages button').count(),11);
-  await p.locator('#passages button').nth(1).click();await p.screenshot({path:shots+'/passage.png'});
+  await p.click('#make');assert.deepEqual(await p.evaluate(()=>manuscript.state.draft),draft,'A failed release must survive reload.');
+  await p.click('#leave');await p.waitForFunction(()=>!manuscript.world.state.making);
+  const b=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:'reduce'}),other=await visit(b);
+  const saved=await other.evaluate(()=>manuscript.state.items[0]);
+  assert.deepEqual(saved.space,draft.space);assert.deepEqual(saved.strokes,draft.strokes);
+  await other.click('#latest');assert.deepEqual(await other.evaluate(()=>manuscript.world.camera.position.toArray()),await p.evaluate(()=>manuscript.world.camera.position.toArray()));
+  await other.click('#surprise');await other.waitForFunction(()=>manuscript.state.items.length===2&&!manuscript.state.saving);
+  await p.bringToFront();await p.waitForFunction(()=>manuscript.state.items.length===2,null,{timeout:10000});
+  await p.reload();await p.waitForFunction(()=>manuscript.ready);assert.equal(await p.evaluate(()=>manuscript.state.items.length),2);
   await p.click('#about-toggle');assert.equal(await p.locator('#about').evaluate(e=>e.open),true);await p.keyboard.press('Escape');
   assert.equal(await p.locator('#about').evaluate(e=>e.open),false);assert.equal(await p.evaluate(()=>document.activeElement.id),'about-toggle');
-  const mobile=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
-  const phone=await visit(mobile);await phone.screenshot({path:shots+'/mobile.png'});
-  await phone.click('#make');await phone.click('#add-line');await phone.screenshot({path:shots+'/mobile-making.png'});
-  for(const selector of ['#making .making-tools','#making .drawing-note']){const box=await phone.locator(selector).boundingBox();assert(box.x>=0&&box.x+box.width<=391);}
-  const foot=await phone.locator('.drawing-footnote').boundingBox(),tools=await phone.locator('.making-tools').boundingBox();
-  assert(foot.y>=tools.y+tools.height&&foot.y+foot.height<=844,'The reuse note must sit below the tools, inside the screen.');
-  assert.notEqual(await phone.locator('.drawing-footnote').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','Paper must shield the reuse note from underlying ink.');
-  await phone.click('#cancel');await phone.click('#fit');await phone.screenshot({path:shots+'/mobile-world.png'});
-  assert.deepEqual(errors,[]);console.log('PASS: desktop/phone, draw, move, undo, shared sync, draft recovery, persistence, keyboard, reduced motion and dialogs.');
-}finally{await browser.close();server.kill('SIGTERM');await new Promise(r=>server.once('close',r));await rm(tmp,{recursive:true,force:true});}
+  const phone=await visit(await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}));
+  await phone.click('#make');await draw(phone,70,340);
+  assert(await phone.locator('#leave').isEnabled(),'A small-screen drawing can be released.');
+  const box=await phone.locator('.drawing-tools').boundingBox(),foot=await phone.locator('.drawing-footnote').boundingBox();
+  assert(box.x>=0&&box.x+box.width<=390&&foot.y>=box.y+box.height&&foot.y+foot.height<=844,'The drawing controls and reuse note must fit on a phone.');
+  await phone.click('#cancel');
+  assert.deepEqual(errors,[]);
+  console.log('PASS: explore, local palette, draw/undo, failed-save recovery, shared sync, persistence, reduced motion, phone and dialog focus.');
+}finally{
+  await browser?.close();server.kill('SIGTERM');
+  if(server.exitCode===null)await new Promise(r=>server.once('close',r));
+  await rm(tmp,{recursive:true,force:true});
+}

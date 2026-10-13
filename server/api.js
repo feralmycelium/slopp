@@ -1,4 +1,5 @@
 import { RULES, boundsOf, placementIssue } from "../public/rules.js";
+import { ENVIRONMENTS } from "../public/environments.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_PAYLOAD_BYTES = 256 * 1024;
@@ -19,6 +20,7 @@ const itemFromRow = (row) => {
     x: row.x,
     y: row.y,
     strokes: payload.strokes,
+    ...(payload.space ? { space: payload.space } : {}),
   };
 };
 
@@ -36,7 +38,7 @@ const parseMark = (value) => {
   for (const stroke of strokes) {
     if (!stroke || typeof stroke !== "object" || Array.isArray(stroke)) return null;
     const { kind, ink, seed, points } = stroke;
-    if ((kind !== "script" && kind !== "thread") || (ink !== "ink" && ink !== "blue" && ink !== "red")) return null;
+    if (!["script", "thread", "line", "ribbon", "form"].includes(kind) || typeof ink !== 'string' || !Object.hasOwn(RULES.inks,ink)) return null;
     if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff || !Array.isArray(points) || points.length < 2 || points.length > RULES.maxStrokePoints) return null;
     const parsedPoints = [];
     for (const point of points) {
@@ -47,7 +49,17 @@ const parseMark = (value) => {
     if (pointCount > RULES.maxPoints) return null;
     parsedStrokes.push({ kind, ink, seed, points: parsedPoints });
   }
-  return { id, x, y, strokes: parsedStrokes };
+  let space;
+  if (value.space !== undefined) {
+    const { position, rotation } = value.space || {};
+    if (!Array.isArray(position) || position.length !== 3 || !position.every(n => validNumber(n, RULES.worldLimit))) return null;
+    if (!Array.isArray(rotation) || rotation.length !== 4 || !rotation.every(n => validNumber(n, 1))) return null;
+    if (Math.abs(Math.hypot(...rotation) - 1) > .01) return null;
+    const environment=value.space.environment;
+    if(environment!==undefined&&!ENVIRONMENTS.some(e=>e.id===environment))return null;
+    space = { position, rotation, ...(environment ? { environment } : {}) };
+  }
+  return { id, x, y, strokes: parsedStrokes, ...(space ? { space } : {}) };
 };
 
 const selectById = async (db, id) => db.prepare(`SELECT ${ITEM_FIELDS} FROM marks WHERE id = ?`).bind(id).first();
@@ -105,6 +117,13 @@ const createMark = async (request, db) => {
   try {
     const existing = await selectById(db, mark.id);
     if (existing) return existing.payload === payload ? json({ item: itemFromRow(existing) }) : json({ error: "id_conflict" }, { status: 409 });
+    if (mark.space) {
+      const insertion = await db.prepare(`INSERT INTO marks (id, created_at, x, y, bounds_x, bounds_y, bounds_right, bounds_bottom, cell_x, cell_y, payload)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`)
+        .bind(mark.id, new Date().toISOString(), mark.x, mark.y, bounds.x, bounds.y, bounds.right, bounds.bottom, cellX, cellY, payload).run();
+      const stored = await selectById(db, mark.id);
+      return stored.payload === payload ? json({ item: itemFromRow(stored) }, { status: insertion.meta?.changes ? 201 : 200 }) : json({ error: "id_conflict" }, { status: 409 });
+    }
     const issue = placementIssue(mark);
     if (issue) return placementConflict(issue);
     const createdAt = new Date().toISOString();

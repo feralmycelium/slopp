@@ -1,9 +1,11 @@
 import {mkdir,cp,copyFile,writeFile,readFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const root=resolve(import.meta.dir,'..');
+const client=await Bun.build({entrypoints:[root+'/src/world.js'],outdir:root+'/public',target:'browser',format:'esm',minify:true});
+if(!client.success)throw new Error(client.logs.join('\n'));
 for(const name of ['DESIGN-CONTRACT.md','LICENSE','ART-LICENSE.md'])await copyFile(root+'/'+name,root+'/public/'+name);
 await rm(root+'/public/source.zip',{force:true});
-const source=['public','server','db','drizzle','scripts','tests','.github','package.json','package-lock.json','drizzle.config.ts','README.md','DESIGN-CONTRACT.md','CONTRIBUTING.md','AGENTS.md','LICENSE','ART-LICENSE.md','.gitignore'];
+const source=['src','public','server','db','drizzle','scripts','tests','.github','package.json','package-lock.json','drizzle.config.ts','README.md','ENVIRONMENTS-PLAN.md','PRODUCT.md','DESIGN-CONTRACT.md','CONTRIBUTING.md','AGENTS.md','LICENSE','ART-LICENSE.md','.gitignore'];
 const zip=Bun.spawnSync(['zip','-q','-r',root+'/public/source.zip',...source,'-x','public/source.zip'],{cwd:root});
 if(zip.exitCode!==0)throw new Error('Could not package the open source download.');
 await mkdir(root+'/dist/server',{recursive:true});

@@ -4,7 +4,7 @@ Read DESIGN-CONTRACT.md first. Keep the experience centred on exploring,
 making and leaving a trace. The original cream, ink and handwriting are the
 reference, including for contributions made by agents.
 
-1. Run `npm install`, then `bun run dev`.
+1. Run `npm install`, `bun run build`, then `PORT=8783 bun run dev`.
 2. Write a failing behavioural test for a changed rule or data operation.
 3. Make the smallest change, then run `bun test` and `bun run build`.
 4. For visual changes, include desktop and phone captures and show the
@@ -16,6 +16,10 @@ Do not rewrite applied migrations or regenerate existing contributions with a
 different hand. Add a migration and a versioned renderer when necessary.
 Never include a live database, local drafts, credentials or dependency caches
 in a patch. Tests use temporary databases.
+
+Use the focused checks in README.md and show the rendered result before
+broader testing. The browser script uses an isolated temporary database.
+Alex's explicit release scope takes priority over a routine review cycle.
 
 No bot auto-merges identity changes. Contributions to code use the MIT license.
 Artwork contributions use CC BY 4.0 as described in ART-LICENSE.md.

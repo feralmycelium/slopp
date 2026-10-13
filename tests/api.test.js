@@ -68,6 +68,39 @@ test("shared requests expose a newly created mark to an independent client", asy
   });
 });
 
+test("new coloured inks persist beside legacy marks and reject arbitrary colours", async () => {
+  const legacy=mark("7f8fad5b-d9cb-469f-a165-70867728950e");
+  const fresh=mark("8f8fad5b-d9cb-469f-a165-70867728950e",4800,4800);
+  fresh.strokes=['orange','pink','mint','yellow','cyan'].map((ink,i)=>({...fresh.strokes[0],ink,seed:i}));
+  expect((await api('/api/marks',{method:'POST',body:JSON.stringify(legacy)})).response.status).toBe(201);
+  expect((await api('/api/marks',{method:'POST',body:JSON.stringify(fresh)})).response.status).toBe(201);
+  const world=await api('/api/world');
+  expect(world.body.items[0].strokes[0].ink).toBe('ink');
+  expect(world.body.items[1].strokes.map(s=>s.ink)).toEqual(['orange','pink','mint','yellow','cyan']);
+  const invalid=mark('9f8fad5b-d9cb-469f-a165-70867728950e',5400,5400);
+  invalid.strokes[0].ink='toString';
+  expect((await api('/api/marks',{method:'POST',body:JSON.stringify(invalid)})).response.status).toBe(400);
+});
+
+test('spatial freehand contributions keep their position and orientation for another visitor',async()=>{
+  const item=mark('af8fad5b-d9cb-469f-a165-70867728950e',0,0);
+  item.space={position:[0,2,0],rotation:[0,0,0,1]};item.strokes[0].kind='line';
+  const saved=await api('/api/marks',{method:'POST',body:JSON.stringify(item)});
+  expect(saved.response.status).toBe(201);
+  expect((await api('/api/world')).body.items[0].space).toEqual(item.space);
+});
+
+test('a drawing keeps its local environment and ink after another visitor reads it',async()=>{
+  const item=mark('bf8fad5b-d9cb-469f-a165-70867728950e',0,0);
+  item.space={position:[-44,-7,-60],rotation:[0,0,0,1],environment:'soft'};
+  item.strokes[0].kind='form';item.strokes[0].ink='lilac';
+  const saved=await api('/api/marks',{method:'POST',body:JSON.stringify(item)});
+  expect(saved.response.status).toBe(201);
+  const observed=(await api('/api/world')).body.items[0];
+  expect(observed.space).toEqual(item.space);
+  expect(observed.strokes).toEqual(item.strokes);
+});
+
 test("a restarted SQLite connection retains contributions", async () => {
   // Given: a mark was written through the request API.
   const created = await api("/api/marks", {

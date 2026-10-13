@@ -1,5 +1,6 @@
+import {INKS} from './environments.js';
 export const RULES=Object.freeze({
-  version:1,paper:'#f0e8d9',inks:{ink:'#282429',blue:'#2b4587',red:'#a74343'},
+  version:3,paper:'#f0e8d9',inks:INKS,
   maxStrokes:128,maxPoints:4096,maxStrokePoints:512,maxTraceSpan:1600,
   worldLimit:50000,clearance:72,cellSize:2400,maxTracesPerCell:18,
   pen:{minWidth:.48,maxWidth:1.5,minGlyph:9,maxGlyph:24},

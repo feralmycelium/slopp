@@ -1,78 +1,87 @@
-# One manuscript, many hands
+# One world, many hands
 
-This contract protects the identity of Untranslatable as its world and source
-grow. A contribution can change the composition; it should still look as
-though the same artist made it.
+This contract keeps slop recognisable as other people develop it.
+The maker approved this expanded direction on 13 October 2026.
 
-## The fixed language
+## The language — design version 3
 
-| Element | Parameter | Enforcement |
-|---|---|---|
-| Paper | `#f0e8d9` | One world surface; no visitor backgrounds |
-| Ink | `#282429`, `#2b4587`, `#a74343` | Server accepts only named ink values |
-| Hand | 2–5 irregular curved pen gestures per glyph | Deterministic renderer; no visitor SVG, fonts or images |
-| Pen | 9–24 unit glyphs; thin variable pressure | Renderer owns size and stroke weight |
-| Loose thread | One fine, continuous curved line | Separate constrained pen; no filled shapes |
-| Space | 72 units around every work | Atomic server collision check |
-| Density | At most 18 traces per 2,400-unit region | Atomic server capacity check |
-| Scale | Each trace fits within 1,600 units | Shared client/server rules |
-| Complexity | 128 strokes, 512 points per stroke, 4,096 points total | Server validation |
-| Existing work | Append only; no visitor edit/delete route | API contract |
-| Motion | Slow, small movement; explicit pause | Client; reduced motion starts paused |
-| Sound | Silent in this release; ambient album layer in a later phase | Sound starts only by choice |
+Cream ground, drawn gestures, solid colour and real depth. Six connected
+environments have distinct structures, movement and small local palettes.
+Neighbouring places borrow gestures. Quiet space matters as much as density.
 
-World coordinates currently run from −50,000 to +50,000. That is an explicit
-capacity boundary, not a claim of infinite storage. Expand it through a
-versioned change after testing precision and performance.
+Everything is abstract. Do not introduce photographs, figures, faces, literal
+objects or copies of reference artworks. Artist references inform rhythm,
+texture, scale and relationships. They are not a catalogue to reproduce.
 
-## What is allowed to grow
+| Element | Current parameter |
+|---|---|
+| Ground | Continuous cream, `#f0e8d9`, with a cream distance fade |
+| Environments | Loose ends, Soft geometry, Almost touching, Overprint, Inside out, The hush |
+| Colour | Four named inks per current environment; 13 named inks including legacy colours |
+| Drawing | Three local tools: line, ribbon and filled shape, with different depth treatments |
+| Surprise | Ten seeded gesture families, no immediate repeat in a browser session |
+| Placement | A fixed 3D position and orientation; visitors can return from any angle |
+| Saved style | Optional `space.environment` records the drawing's environment |
+| Complexity | 128 strokes, 512 points per stroke, 4,096 points total |
+| World boundary | Camera bounded to ±49,000; saved coordinates validated within ±50,000 |
+| Existing contributions | Append only; no visitor edit/delete API |
+| Sound | Silent; an ambient album layer is a later phase |
 
-The number of contributions, their routes across the paper, the relationships
-between passages, new ways to navigate them, accessibility, rendering speed,
-self-hosting support, and ways to preserve/export the shared work.
+The world uses a repeating spatial field to give procedural places stable
+identities. Contributions remain individually stored at their original
+anchors. This is a bounded shared artwork, not infinite storage.
 
-New pens must produce a recognisable relative of the existing hand. Prove this
-with side-by-side images at the same scale, using the original artwork as the
-reference. A new pen is an explicit design change, never a hidden side effect
-of a dependency update. Keep the old renderer available for existing data.
+Local palettes stay fixed for an active draft. Crossing into another place
+changes the tools for the next drawing; it never recolours earlier work.
+Keep saved points and colour meanings compatible. Legacy paper records use
+a deterministic spatial adapter and remain readable.
 
-## What stays outside the core
+## Motion and interaction
 
-Profiles, rankings, likes, follower counts, advertising, attention rewards,
-chat, arbitrary uploads, new palettes, generated biographies and
-interfaces that compete with the manuscript. Forks may pursue another identity;
-the core does not silently turn into that fork.
+Drawing stays direct. Release gently unfolds the drawn gesture into depth.
+The surprise button draws lines progressively and opens colour shapes over
+roughly three seconds. Depth interpretation is procedural and reproducible;
+do not describe it as AI.
 
-## Calm is a constraint
+Drift has its own speed slider. Drag or arrows turn the camera; W/A/S/D and
+Q/E move through space. Trackpad pinch travels forward or backward along the
+current gaze without changing drift speed. Visitors can turn around and
+revisit a trace. The “elsewhere” shortcut travels to another environment in
+about four seconds; movement, drag, pinch, drawing or pause interrupts it.
 
-No flashes, abrupt scene changes, forced camera rides, countdowns or attention
-rewards. The visitor controls their pace and can always return to the beginning.
-Movement stays slow and interruptible. Pausing preserves the whole experience.
-Empty paper is part of the work; growth must preserve it.
+Pause stops automatic motion. Reduced motion starts still, skips release
+animation and makes the shortcut arrive directly. Hidden tabs suspend
+rendering and travel. Drawing and the About dialog hold travel. No flashing,
+camera rolls, countdowns, sound autoplay or attention rewards.
 
-The audiovisual direction is an album experienced as a place. Future sound
-belongs to locations and relationships in this manuscript. Movement should
-produce gradual blends, with no abrupt changes in loudness. Always provide a
-visible mute and independent volume control. Sound needs an explicit start;
-the visual world remains complete in silence. An interactive sound layer must
-use supplied or cleared music, preserve the artist's arrangements, and document
-its transitions before it enters the core. This release contains no audio.
+## What can grow
 
-## Changes without the original makers
+New abstract environments, local palettes, drawing treatments, spatial
+relationships, export tools and performance improvements can extend this
+language. Each environment should have a distinguishable silhouette, a
+motion character, a small palette and enough room to see individual marks.
+Reuse a few neighbouring gestures without making every place a mixture of
+everything. Preserve old contributions and review the rendered result.
 
-Ordinary additions to the world pass the rules automatically. They need no
-manual review. Code changes go through the same public tests and one
-independent review. Review the observable result, not who proposed it.
+Keep profiles, rankings, likes, chat, advertisements and arbitrary uploads
+outside this core. The experience is exploring, drawing and leaving a trace.
 
-Accessibility and performance fixes may preserve the current design version.
-A change to the palette, gesture family, spatial rules or saved format must
-name the changed rule, include before/after visual evidence, preserve old
-marks, and increment the appropriate version. Default to the existing contract
-when there is no evidence for changing it.
+Code is MIT licensed. Shared drawings use CC BY 4.0. Source and drawing
+downloads make the work portable. Contributions to the live world need no
+manual review; code and artistic identity changes remain deliberate releases.
+Open source does not automatically deploy contributors' patches.
 
-Tests protect mechanical rules; human reviewers protect the artistic identity.
-Open source makes stewardship transferable. It does not mean unreviewed code
-should automatically replace the live world.
+The current preview follows the maker's request for focused checks and direct
+visual inspection before broader testing. Do not turn a creative preview into
+a security audit or exhaustive review cycle.
 
-The executable parameters are in `public/rules.js`. Tests and this document
-must change together when a parameter changes.
+## Future sound
+
+The visual release comes first. The next phase uses Alex's existing music
+library, with slow crossfades between environments and layers emerging as
+visitors explore. Sound needs an explicit start, permanently available mute
+and independent volume. The visual world must remain complete in silence.
+
+Environment definitions and the surprise deck live in `public/environments.js`.
+Shared data limits live in `public/rules.js`. Update this contract with changes
+to either, and keep existing data renderable.
