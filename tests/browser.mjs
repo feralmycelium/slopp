@@ -28,7 +28,7 @@ try{
   await p.click('#make');assert.equal(await p.locator('[data-ink]').count(),4);
   await p.click('[data-ink="pink"]');await draw(p);await draw(p,560,460);await p.click('#undo');
   assert.equal(await p.evaluate(()=>manuscript.state.draft.strokes.length),1);
-  const draft=await p.evaluate(()=>structuredClone(manuscript.state.draft));
+  const draft=await p.evaluate(()=>JSON.parse(JSON.stringify(manuscript.state.draft)));
   await p.route('**/api/marks',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'storage_unavailable',recoverable:true})}));
   await p.click('#leave');await p.waitForFunction(()=>!manuscript.state.saving);
   assert.match(await p.locator('#status').innerText(),/try.*again/i);
