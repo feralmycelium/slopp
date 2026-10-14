@@ -67,6 +67,12 @@ signature. The lettering follows a curve selected around marks in the captured
 composition, borrowing a nearby ink and varying its placement between exports.
 Capturing a still does not pause or move the world.
 
+Download animation captures eight seconds of the live canvas, with curved
+handwriting that draws itself and gently moves. It uses the current drift
+and camera, keeps all controls out, and saves MP4 or WebM according to browser
+support. Pause and reduced motion also still the lettering. Captures are silent,
+can be cancelled, and stop if the tab is hidden.
+
 New abstract environments, local palettes, drawing treatments, spatial
 relationships, export tools and performance improvements can extend this
 language. Each environment should have a distinguishable silhouette, a

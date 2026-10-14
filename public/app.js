@@ -1,6 +1,7 @@
 import {createWorld,PALETTE,wheelTravel} from './world.js';
 import {SEEDS} from './rules.js';
 import {downloadStill} from './still.js';
+import {downloadAnimation} from './animation.js';
 import {createIdleControls} from './idle.js';
 import {ENVIRONMENTS,environmentById,makeSurprise} from './environments.js';
 
@@ -30,6 +31,18 @@ document.addEventListener('visibilitychange',wakeControls);
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',wakeControls));
 function wandered(){document.body.classList.add('has-wandered');}
 $('download-still').onclick=async()=>{try{await downloadStill(world);}catch{toast('Could not save this view. Please try again.');}};
+let animationCapture=null;
+$('download-animation').onclick=async()=>{
+  if(animationCapture){animationCapture.abort();return;}
+  animationCapture=new AbortController();
+  const button=$('download-animation');
+  button.setAttribute('aria-label','Cancel animation');
+  try{
+    await downloadAnimation(world,{signal:animationCapture.signal,onProgress:seconds=>{button.textContent='Saving '+seconds+'s · cancel';}});
+    toast('Your little moving world is saved.');
+  }catch(error){if(error.name!=='AbortError')toast(error.message);}
+  finally{animationCapture=null;button.textContent='Download animation';button.removeAttribute('aria-label');wakeControls();}
+};
 function toast(message){$('status').textContent=message;$('status').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('status').classList.remove('visible'),4200);}
 function updateControls(){
   $('speed').value=world.state.speed;

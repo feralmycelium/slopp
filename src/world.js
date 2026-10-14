@@ -50,7 +50,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
   const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map();
   const preview=new THREE.Group();scene.add(preview);
-  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
+  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null,captureFrame=null;
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
 
   function material(color,thin=false,opacity=1,animated=true,motion='flow') {
@@ -248,6 +248,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
       renderer.render(scene,camera);
+      captureFrame?.(canvas,now);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
     requestAnimationFrame(frame);
@@ -257,5 +258,6 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
   return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
     captureCanvas(){renderer.render(scene,camera);return canvas;},
+    captureFrames(callback){captureFrame=callback;return ()=>{if(captureFrame===callback)captureFrame=null;};},
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }

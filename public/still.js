@@ -57,18 +57,30 @@ export function planSignature(pixels,width,height,random=Math.random){
   }
   return best;
 }
-export function drawSignature(ctx,width,height){
+export function signatureForCanvas(ctx,width,height){
   const sample=document.createElement('canvas');sample.width=160;sample.height=Math.max(1,Math.round(160*height/width));
   const sampleCtx=sample.getContext('2d',{willReadFrequently:true});sampleCtx.drawImage(ctx.canvas,0,0,sample.width,sample.height);
-  const plan=planSignature(sampleCtx.getImageData(0,0,sample.width,sample.height),width,height);
+  return planSignature(sampleCtx.getImageData(0,0,sample.width,sample.height),width,height);
+}
+export function paintSignature(ctx,plan,seconds=null){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
-  for(const g of plan.glyphs){
-    ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.angle);ctx.scale(plan.scale,plan.scale);
+  for(const [i,g] of plan.glyphs.entries()){
+    const reveal=seconds===null?1:Math.min(1,Math.max(0,(seconds-i*.075)/.45));
+    if(!reveal)continue;
+    const sway=seconds===null?0:Math.sin(seconds*1.3+i*.35)*2;
+    ctx.save();ctx.translate(g.x,g.y+sway*plan.scale);ctx.rotate(g.angle+sway*.008);ctx.scale(plan.scale,plan.scale);
     const path=new Path2D(letters[g.letter]);
+    if(reveal<1){ctx.setLineDash([100,100]);ctx.lineDashOffset=100*(1-reveal);}
     ctx.strokeStyle='#f0e8d9';ctx.lineWidth=4;ctx.stroke(path);
     ctx.strokeStyle=plan.ink;ctx.lineWidth=1.65;ctx.stroke(path);ctx.restore();
   }
   ctx.restore();
+}
+export function drawSignature(ctx,width,height){paintSignature(ctx,signatureForCanvas(ctx,width,height));}
+export function downloadBlob(blob,extension){
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='slopp-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+extension;
+  link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 export async function downloadStill(world){
   const source=world.captureCanvas(),image=document.createElement('canvas');
@@ -77,7 +89,5 @@ export async function downloadStill(world){
   drawSignature(ctx,image.width,image.height);
   const blob=await new Promise(resolve=>image.toBlob(resolve,'image/png'));
   if(!blob)throw new Error('Could not capture this view.');
-  const url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download='slopp-'+new Date().toISOString().replace(/[:.]/g,'-')+'.png';
-  link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  downloadBlob(blob,'png');
 }
