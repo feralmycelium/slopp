@@ -126,7 +126,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     const seed=hash(item.id),rand=random(seed);
     return {position:[item.x*.035,(rand()-.5)*24,item.y*.035-28],rotation:[0,0,0,1]};
   }
-  function paintTrace(item,flat=false) {
+  function paintTrace(item,flat=false,lineWidth=null) {
     const group=new THREE.Group(),space=placement(item),env=environmentById(space.environment);
     group.position.fromArray(space.position);group.quaternion.fromArray(space.rotation);
     item.strokes.forEach((stroke,strokeIndex)=>{
@@ -143,7 +143,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         const mesh=new THREE.Mesh(geometry,material(color,false,1,!flat,env.id));mesh.userData.fill=true;group.add(mesh);
       }else{
         const width=stroke.kind==='ribbon'?.19:stroke.kind==='thread'?.018:env.id==='hush'?.032:.05;
-        line(group,points,color,width,false,1,env.id);
+        line(group,points,color,lineWidth??width,false,1,env.id);
         if(!flat&&env.id==='echo')for(let j=1;j<=2;j++)line(group,points.map(p=>p.clone().multiplyScalar(1+j*.035).add(V(j*.14,0,j*.65))),color,.023,true,.55,env.id);
         if(!flat&&env.id==='print'&&stroke.kind==='ribbon')for(let j=0;j<7;j++)line(group,points.map((p,i)=>p.clone().add(V((j-3)*.095+Math.sin(i+j)*.03,0,j*.08))),color,.018,true,.7,env.id);
         if(stroke.kind==='script')line(group,points.map((p,i)=>p.clone().add(V(Math.sin(i*1.5)*.12,Math.cos(i*1.5)*.25,0))),color,.022);
@@ -190,7 +190,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   // Materials are cloned so a fade never touches real traces; reduced motion paints the finished stroke still.
   function ghost(item,{draw=false}={}) {
     dropGhost(item.id);
-    const group=paintTrace(item),still=reduced.matches,offset=group.position.clone().applyQuaternion(camera.quaternion);
+    const group=paintTrace(item,false,.018),still=reduced.matches,offset=group.position.clone().applyQuaternion(camera.quaternion);
     group.quaternion.premultiply(camera.quaternion);
     group.traverse(child=>{
       if(!child.material)return;
