@@ -4,6 +4,7 @@ import {downloadStill} from './still.js';
 import {downloadAnimation} from './animation.js';
 import {ENVIRONMENTS,environmentById,makeSurprise,environmentAt} from './environments.js';
 import {createIdleControls} from './idle.js';
+import {invitationGesture,createInvitationClock} from './invitation.js';
 import {createSoundController,soundAvailable} from './sound/score.js';
 
 const $=id=>document.getElementById(id);
@@ -24,15 +25,15 @@ function drawingRadius(item){
 function soundSurroundings(position){
   const e=environmentAt(position.toArray());sound.environment({primary:e.primary.id,neighbour:e.neighbour.id,blend:e.blend});
   if(!sound.state.wanted)return;
-  const cam=world.camera,v=cam.position.clone(),tanHalf=Math.tan(cam.fov*Math.PI/360);let best=0,id=null;
+  const cam=world.camera,v=cam.position.clone(),tanHalf=Math.tan(cam.fov*Math.PI/360);let best=0,id=null,x=0,salient=null;
   for(const item of state.items){
     const p=item.space?.position;if(!p)continue;
     v.set(p[0],p[1],p[2]).applyMatrix4(cam.matrixWorldInverse);const depth=-v.z;if(depth<.5)continue;
     v.set(p[0],p[1],p[2]).project(cam);if(Math.abs(v.x)>1.05||Math.abs(v.y)>1.05)continue;
     const frac=drawingRadius(item)/(depth*tanHalf),area=Math.min(1,frac*frac/cam.aspect);
-    if(area>best){best=area;id=item.id;}
+    if(area>best){best=area;id=item.id;x=Math.max(-1,Math.min(1,v.x));salient=item;}
   }
-  sound.salience(best,id);
+  sound.salience(best,id,{x,item:salient});
 }
 function soundMotion(travel){
   const t=performance.now()/1000;
@@ -49,9 +50,18 @@ const world=createWorld(canvas,{
     $('place').textContent=distance<12?'the beginning':Math.round(distance)+' from the beginning';
     $('environment-name').textContent=environment.name;
     if(!world.state.making)usePalette(environment);
-    if(travel>8)wandered();
   }
 });
+const invitation=createInvitationClock({
+  visible:()=>document.visibilityState==='visible',
+  change:phase=>{
+    if(phase==='show')world.ghost(invitationGesture({environment:world.state.environment||ENVIRONMENTS[0],seed:crypto.getRandomValues(new Uint32Array(1))[0],width:innerWidth,height:innerHeight}),{draw:!matchMedia('(prefers-reduced-motion: reduce)').matches});
+    else{world.dismissGhost('invitation');document.body.classList.add('has-wandered');}
+  }
+});
+document.addEventListener('visibilitychange',()=>invitation.visibilityChanged());
+for(const type of ['keydown','touchstart'])addEventListener(type,()=>invitation.activity(),{capture:true,passive:true});
+document.addEventListener('click',event=>{if(event.target.closest?.('button'))invitation.activity();},{capture:true});
 window.manuscript={state,world,get ready(){return state.ready;}};
 window.manuscript.sound=sound;
 const wakeControls=createIdleControls({
@@ -62,7 +72,7 @@ for(const type of ['pointermove','pointerdown','pointerup','pointercancel','keyd
   document.addEventListener(type,wakeControls,{capture:true,passive:true});
 document.addEventListener('visibilitychange',wakeControls);
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',wakeControls));
-function wandered(){document.body.classList.add('has-wandered');}
+function wandered(){invitation.activity();}
 $('download-still').onclick=async()=>{try{await downloadStill(world);}catch{toast('Could not save this view. Please try again.');}};
 let animationCapture=null;
 $('download-animation').onclick=async()=>{
@@ -131,6 +141,7 @@ async function sync(){
     }
     world.setItems(state.items);state.ready=true;
   }catch{state.ready=true;}
+  invitation.start();
 }
 async function storeMark(mark){
   const response=await fetch('/api/marks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(mark)});
@@ -295,4 +306,3 @@ $('archive-close').onclick=()=>$('archive').close();
 $('archive').addEventListener('close',()=>{cancelAnimationFrame(archiveFrame);world.state.paused=dialogPause;updateControls();$('about-toggle').focus();});
 try{const stored=JSON.parse(localStorage.getItem(draftKey));if(stored?.space&&stored.strokes?.length)state.draft=stored;}catch{}
 usePalette(ENVIRONMENTS[0]);updateControls();sync();setInterval(()=>{if(!document.hidden)sync();},5000);
-setTimeout(wandered,9000);

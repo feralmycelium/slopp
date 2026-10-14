@@ -57,7 +57,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const state={speed:reduced.matches?0:24,paused:reduced.matches,making:false,yaw:0,pitch:0,time:0,items:[],travel:0,environment:ENVIRONMENTS[0]};
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
-  const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map();
+  const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map(),ghosts=new Map();
   const preview=new THREE.Scene();preview.fog=scene.fog;
   let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
@@ -157,10 +157,11 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     });
     return group;
   }
-  function unfold(item,draw=false) {
-    const group=traces.get(item.id);if(!group)return;
+  function unfold(item,draw=false) {unfoldGroup(item.id,traces.get(item.id),draw);}
+  function unfoldGroup(id,group,draw) {
+    if(!group)return;
     if(reduced.matches||state.paused)return;
-    unfoldings.set(item.id,{group,age:0,draw});
+    unfoldings.set(id,{group,age:0,draw});
     group.scale.z=.015;
     for(const child of group.children){
       child.scale.y=(draw&&child.userData.fill) ? .001 : 1;
@@ -183,6 +184,43 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         unfoldings.delete(id);
       }
     }
+  }
+  // Ghosts (the drawn invitation) live outside state.items and traces, so syncing never counts or disposes them.
+  // space.position is an offset from the camera, held every frame so drift never carries the camera into the ghost.
+  // Materials are cloned so a fade never touches real traces; reduced motion paints the finished stroke still.
+  function ghost(item,{draw=false}={}) {
+    dropGhost(item.id);
+    const group=paintTrace(item),still=reduced.matches,offset=group.position.clone().applyQuaternion(camera.quaternion);
+    group.quaternion.premultiply(camera.quaternion);
+    group.traverse(child=>{
+      if(!child.material)return;
+      const source=child.material,mat=source.clone();mat.transparent=true;mat.userData.opacity=mat.opacity;
+      if(!still){mat.onBeforeCompile=source.onBeforeCompile;mat.customProgramCacheKey=source.customProgramCacheKey;}
+      child.material=mat;
+    });
+    group.position.copy(camera.position).add(offset);scene.add(group);ghosts.set(item.id,{group,offset,fade:null});
+    if(draw&&!still)unfoldGroup(item.id,group,true);
+  }
+  function dropGhost(id) {
+    const entry=ghosts.get(id);if(!entry)return;
+    entry.group.traverse(child=>child.material?.dispose());dispose(entry.group);ghosts.delete(id);unfoldings.delete(id);
+  }
+  function dismissGhost(id,{fadeMs=2000}={}) {
+    const entry=ghosts.get(id);if(!entry)return;
+    if(reduced.matches||fadeMs<=0)dropGhost(id);else entry.fade??={from:performance.now(),ms:fadeMs};
+  }
+  function animateGhosts(now) {
+    for(const [id,entry]of ghosts){
+      entry.group.position.copy(camera.position).add(entry.offset);
+      if(!entry.fade)continue;
+      const left=1-clamp((now-entry.fade.from)/entry.fade.ms,0,1);
+      if(!left){dropGhost(id);continue;}
+      entry.group.traverse(child=>{if(child.material)child.material.opacity=child.material.userData.opacity*left;});
+    }
+  }
+  function withoutGhosts(fn) {
+    for(const {group}of ghosts.values())group.visible=false;
+    try{return fn();}finally{for(const {group}of ghosts.values())group.visible=true;}
   }
   function syncTraces() {
     const nearby=state.items.map(item=>({item,d:camera.position.distanceToSquared(V(...placement(item).position))})).filter(v=>v.d<145**2).sort((a,b)=>a.d-b.d).slice(0,220);
@@ -233,7 +271,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   function setKey(key,down){if(down){flight=null;keys.add(key.toLowerCase());}else keys.delete(key.toLowerCase());}
   function stopKeys(){keys.clear();pinchRemaining=0;flight=null;}
   function createLoopCapture(width,height){
-    const snapshot=scene.clone(),foreground=preview.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
+    const snapshot=withoutGhosts(()=>scene.clone()),foreground=preview.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
     for(const layer of [snapshot,foreground])layer.traverse(object=>{
       if(!object.geometry)return;
       if(!geometries.has(object.geometry))geometries.set(object.geometry,object.geometry.clone());
@@ -283,6 +321,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         movement.multiplyScalar(dt).addScaledVector(direction,pinchStep);camera.position.add(movement);state.travel+=movement.length();camera.position.clampScalar(-49000,49000);
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
+      animateGhosts(now);
       renderWorld(renderer,scene,preview,camera);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
@@ -291,8 +330,8 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   addEventListener('resize',resize);addEventListener('blur',stopKeys);document.addEventListener('visibilitychange',stopKeys);
   reduced.addEventListener('change',e=>{if(e.matches){state.paused=true;state.speed=0;}onMove();});
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
-  return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
-    captureCanvas(){renderWorld(renderer,scene,preview,camera);return canvas;},
+  return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,ghost,dismissGhost,
+    captureCanvas(){withoutGhosts(()=>renderWorld(renderer,scene,preview,camera));return canvas;},
     createLoopCapture,
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }

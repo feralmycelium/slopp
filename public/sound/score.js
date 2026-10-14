@@ -59,7 +59,7 @@ export function createSoundController({onChange=()=>{},seed=1}={}){
     look(dx,dy){if(live())play(musician.look({t:ctx.currentTime,dx,dy}));},
     turn(){if(live())play(musician.turn({t:ctx.currentTime}));},
     surprise(d){if(live())play(musician.surprise({...d,t:ctx.currentTime,environment}));},
-    salience(prominence,id){if(live())musician.salience({t:ctx.currentTime,prominence,id});},
+    salience(prominence,id,extra){if(live())play(musician.salience({...extra,t:ctx.currentTime,prominence,id}));},
     environment(e){if(e.primary!==environment.primary){environment={...e};if(instrument)rewarm();}else environment={...e};},
     get context(){return ctx;},
     get recent(){return last;},

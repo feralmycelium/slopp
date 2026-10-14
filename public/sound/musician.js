@@ -6,7 +6,7 @@ function rng(seed){let a=seed>>>0;return()=>{a=a+0x6d2b79f5>>>0;let t=a;t=Math.i
 const hash=s=>[...String(s)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
 
 export const RULES={restAfter:4,restLevel:-27,spanMin:20,spanMax:60,onsetWindow:10,onsetSoftLimit:6,fatigueAfter:20,maxAttenuation:9,
-  articulationGap:1/3,blendTauSlow:10,blendTauFast:2.5,pivotLow:.42,salienceEnter:.04,salienceExit:.025,detailGap:6,breathGap:4,travelGap:25};
+  articulationGap:1/3,blendTauSlow:10,blendTauFast:2.5,pivotLow:.42,salienceEnter:.04,salienceExit:.025,detailGap:6,breathGap:4,travelGap:25,hearGap:6,hearAfterStroke:1.5};
 
 export function createMusician({seed=1}={}){
   const random=rng(seed),walk={},onsets=[];
@@ -14,7 +14,8 @@ export function createMusician({seed=1}={}){
   let stroke=null,restNext=2,lastTravel=-Infinity;
   let sal=0,salOn=false,salId=null,salT=null,lastDetail=-Infinity,space=0,glide=0,pinchRate=0,lastPinch=null,lastBreath=-Infinity;
   let lookRate=0,lookT=null,lastTurn=-Infinity,stir=0;
-  let lastAnswer=-Infinity,lastStrokeEnd=-Infinity;
+  let lastAnswer=-Infinity,lastStrokeEnd=-Infinity,lastHeard=-Infinity;
+  const heard=new Set();
 
   const palette=()=>weight>.5?neighbour:primary;
   const allowColour=id=>id===primary&&rawBlend<RULES.pivotLow&&weight<.5;
@@ -43,6 +44,26 @@ export function createMusician({seed=1}={}){
   function answerTurn(t,pan){
     lastTurn=t;const id=primary,note=paletteNotes(id).held[Math.floor(random()*2)];
     return [glint(id,note,t+.003,PALETTES[id].fineGain-13,pan),voice({t:t+.01,palette:id,unit:'held',note,gain:-20,attack:.25,release:3,dur:2,role:'turn',send:.6,pan})];
+  }
+  const span=st=>{const xs=st.points.map(p=>p[0]),ys=st.points.map(p=>p[1]);return Math.hypot(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));};
+  const picker=(id,r)=>list=>{const safe=list.filter(n=>allowColour(id)||!isColour(id,n));return safe[Math.floor(r()*safe.length)];};
+  // One voice per stroke, at most ten, over about 2.8 s; a fixed pan replaces the random pan of fine notes.
+  function figure({t,id,r,pick,strokes,role,quieter=0,pan}){
+    const {fine,broad}=paletteNotes(id),fixed=pan===undefined?{}:{pan};
+    const keep=strokes.length>10?strokes.filter((_,i)=>i%Math.ceil(strokes.length/10)===0):strokes;
+    return keep.map((st,i)=>{
+      const at=t+.1+2.8*i/Math.max(1,keep.length),size=span(st);
+      if(st.kind==='form')return voice({t:at,palette:id,unit:'broad',note:pick(broad),gain:PALETTES[id].broadGain-2-quieter,attack:.3,release:4,dur:2.5,role,...fixed});
+      if(size>250)return voice({t:at,palette:id,unit:'broad',note:pick(broad),gain:PALETTES[id].broadGain-quieter,attack:.9,release:4,dur:3,role,...fixed});
+      return voice({t:at,palette:id,unit:'fine',note:pick(fine),gain:PALETTES[id].fineGain-3-quieter,attack:.008,release:2,dur:1,role,pan:pan??r()-.5});
+    });
+  }
+  // A drawing coming into view is heard once, 6 dB under a surprise, panned to where it sits on screen.
+  // It plays in the current primary palette (the loaded kit), not the drawing's own environment, and is not visitor input, so it never calls touch().
+  function hear({t,id,item,x=0}){
+    if(!item?.strokes?.length||heard.has(id)||t-lastHeard<RULES.hearGap||stroke!==null||t-lastStrokeEnd<RULES.hearAfterStroke)return [];
+    heard.add(id);lastHeard=t;const r=rng(hash(id));
+    return figure({t,id:primary,r,pick:picker(primary,r),strokes:item.strokes,role:'hear',quieter:6,pan:clamp(x,-.6,.6)});
   }
   const strokeContext={voice,step,att:t=>attenuation(t),tired,random,colourOk:id=>allowColour(id),
     canAnswer(t,id){if(t-lastAnswer<(id==='hush'?12:6))return false;lastAnswer=t;return true;}};
@@ -74,25 +95,18 @@ export function createMusician({seed=1}={}){
       lastBreath=t;const id=primary,note=paletteNotes(id).held[delta>0?1:0];
       return [glint(id,note,t+.003,PALETTES[id].fineGain-13),voice({t:t+.01,palette:id,unit:'held',note,gain:-22,attack:.4,release:2.5,dur:2.5,role:'breath',send:.6})];
     },
-    salience({t,prominence,id}){
-      const tau=prominence>sal?1:3,dt=salT===null?1/30:clamp(t-salT,0,1);salT=t;sal+=(prominence-sal)*(1-Math.exp(-dt/tau));
+    salience({t,prominence,id,x,item}){
+      const before=salOn?salId:undefined,tau=prominence>sal?1:3,dt=salT===null?1/30:clamp(t-salT,0,1);salT=t;sal+=(prominence-sal)*(1-Math.exp(-dt/tau));
       if(!salOn&&sal>RULES.salienceEnter){salOn=true;salId=id;}
       else if(salOn&&sal<RULES.salienceExit)salOn=false;
       if(salOn)salId=id;
+      return salOn&&salId!==before?hear({t,id,item,x}):[];
     },
     surprise({t,seed:s,strokes,environment}){
       if(environment)this.environment(environment);
-      touch(t);const id=primary,r=rng(s),fine=paletteNotes(id).fine,broad=paletteNotes(id).broad,events=[];
-      const span=st=>{const xs=st.points.map(p=>p[0]),ys=st.points.map(p=>p[1]);return Math.hypot(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));};
-      const pick=list=>{const safe=list.filter(n=>allowColour(id)||!isColour(id,n));return safe[Math.floor(r()*safe.length)];};
-      const keep=strokes.length>10?strokes.filter((_,i)=>i%Math.ceil(strokes.length/10)===0):strokes;
-      keep.forEach((st,i)=>{
-        const at=t+.1+2.8*i/Math.max(1,keep.length),size=span(st);
-        if(st.kind==='form')events.push(voice({t:at,palette:id,unit:'broad',note:pick(broad),gain:PALETTES[id].broadGain-2,attack:.3,release:4,dur:2.5,role:'surprise'}));
-        else if(size>250)events.push(voice({t:at,palette:id,unit:'broad',note:pick(broad),gain:PALETTES[id].broadGain,attack:.9,release:4,dur:3,role:'surprise'}));
-        else events.push(voice({t:at,palette:id,unit:'fine',note:pick(fine),gain:PALETTES[id].fineGain-3,attack:.008,release:2,dur:1,role:'surprise',pan:r()-.5}));
-      });
-      for(let k=0;events.length<3||(keep.length===1&&k<3);k++){
+      touch(t);const id=primary,r=rng(s),fine=paletteNotes(id).fine,pick=picker(id,r);
+      const events=figure({t,id,r,pick,strokes,role:'surprise'}),voiced=events.length;
+      for(let k=0;events.length<3||(voiced===1&&k<3);k++){
         if(k>6)break;
         events.push(voice({t:t+.5+k*.8,palette:id,unit:'fine',note:pick(fine),gain:PALETTES[id].fineGain-4-k,attack:.008,release:2,dur:1,role:'surprise',pan:(k-1)*.4}));
       }
@@ -100,6 +114,7 @@ export function createMusician({seed=1}={}){
       if(first.unit!=='fine'||first.t-t>.015)events.unshift(glint(id,first.note,t+.003,PALETTES[id].fineGain-8));
       return events;
     },
+    reset(){heard.clear();},
     mix(t){
       const restingFor=t-lastInput;
       return {space:Math.tanh(space),glideCents:clamp(glide,-40,40),weight,primary,neighbour,stir,blendTau:RULES.blendTauSlow+(RULES.blendTauFast-RULES.blendTauSlow)*speed,
