@@ -10,3 +10,19 @@ dialog{border:1px solid var(--line);border-radius:3px;background:var(--paper);co
 #environment-name{display:block;font:19px/1.3 Georgia,serif;letter-spacing:-.3px;color:var(--ink);margin:5px 0 1px}#orientation{align-items:flex-start}#compass{margin-top:12px}#elsewhere{pointer-events:auto;font-size:10px;padding:7px 0;border-radius:0;color:var(--muted);letter-spacing:.3px}#elsewhere:hover{background:none;color:var(--ink)}#elsewhere span{margin-left:12px}.surprise.is-releasing svg{transform:rotate(160deg)}#drawing-note p{max-width:290px;line-height:1.6}.inks button{transition:background .3s}.is-making #invitation{display:none}
 @media(max-width:760px){#environment-name{font-size:17px}#orientation{top:109px}#invitation{top:29%}#invitation h1{font-size:26px}#invitation p{max-width:190px}#help{letter-spacing:.1px;font-size:7px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+body :is(header,#orientation,#controls,#travel-pad,#help,#invitation,#page-actions){transition:none}
+body.is-idle :is(header,#orientation,#controls,#travel-pad,#help,#invitation,#status,#page-actions){opacity:0;pointer-events:none;transition:opacity .8s ease-out}
+body.is-idle :is(header,#orientation,#page-actions) *{pointer-events:none}
+body.is-idle #world{cursor:none}
+#page-actions{position:fixed;right:38px;top:83px;display:flex;gap:18px;align-items:center;z-index:3}
+#page-actions a,#page-actions button{font:10px Arial,sans-serif;color:var(--muted);padding:8px 0;border:0;border-radius:0}
+#page-actions a:hover,#page-actions button:hover{color:var(--ink);background:none}
+#page-actions span{margin-left:5px}
+.is-making #page-actions{display:none}
+@media(max-width:760px){#page-actions{right:22px;top:75px;gap:14px}#page-actions a,#page-actions button{font-size:9px}}
+.sound-controls{display:flex;align-items:center;gap:6px}#sound .wave,#sound .off{display:none}#sound[data-state=on] .wave{display:inline}#sound[data-state=muted] .off,#sound[data-state=restore] .off{display:inline}#sound[data-state=loading]{opacity:.45}#sound[data-state=restore]{outline:1px solid #2b458766}
+#volume{width:64px;margin:0}#sound-reset{color:var(--muted)}
+@media(max-width:760px){#volume{width:46px}.sound-controls{gap:3px}}
+@media(max-width:760px){body.sound-on .direction-controls{display:contents}body.sound-on .sound-controls{grid-row:1;grid-column:1/-1;justify-self:end}body.sound-on .travel-controls,body.sound-on #turn{grid-row:2}body.sound-on #turn{grid-column:2;justify-self:end}body.sound-on .maker-controls{grid-row:3}body.sound-on #travel-pad{bottom:236px}body.sound-on #status{bottom:275px}}
+.is-making #controls{display:grid;visibility:hidden;z-index:4}.is-making #sound:not([hidden]){visibility:visible;position:fixed;top:30px;right:84px;z-index:4;background:var(--paper)}@media(max-width:760px){.is-making #sound:not([hidden]){top:24px;right:62px}}
+body.is-idle #controls{opacity:1;pointer-events:none}body.is-idle :is(.travel-controls,.maker-controls),body.is-idle .direction-controls>:not(.sound-controls),body.is-idle .sound-controls>:not(#sound){opacity:0;pointer-events:none;transition:opacity .8s ease-out}body.is-idle #sound{opacity:.45;pointer-events:auto}

@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 data/
 .sites-runtime/
@@ -10,3 +10,5 @@ data/
 .omo/
 PLAN.md
 public/source.zip
+.sound-assets/
+__pycache__/

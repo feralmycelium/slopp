@@ -1,0 +1,6 @@
+The animation encoder uses Mediabunny 1.61.4 by Vanilagy, under MPL-2.0.
+The dependency is bundled without source modifications.
+Source: https://registry.npmjs.org/mediabunny/-/mediabunny-1.61.4.tgz
+License: https://mozilla.org/MPL/2.0/
+
+Slopp's own source remains under the MIT license.

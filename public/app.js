@@ -1,14 +1,49 @@
 import {createWorld,PALETTE,wheelTravel} from './world.js';
 import {SEEDS} from './rules.js';
-import {ENVIRONMENTS,environmentById,makeSurprise} from './environments.js';
+import {downloadStill} from './still.js';
+import {downloadAnimation} from './animation.js';
+import {ENVIRONMENTS,environmentById,makeSurprise,environmentAt} from './environments.js';
+import {createIdleControls} from './idle.js';
+import {createSoundController,soundAvailable} from './sound/score.js';
 
 const $=id=>document.getElementById(id);
+const SOUND_FAILED='Sound could not load. Tap the speaker to try again.',SOUND_PAUSED='Sound paused. Tap the speaker to bring it back.';
 const canvas=$('world'),draftKey='untranslatable-spatial-draft-v1';
 const state={items:[],cursor:0,draft:null,ink:'ink',kind:'line',saving:false,ready:false};
 let toastTimer,pointer=null,stroke=null,draftFrame=0,archiveIndex=0,archiveWork=null,archiveCanvas=null,archiveFrame=0,dialogPause=false,lastSurprise=null,paletteId=null;
+const sound=createSoundController({onChange:renderSound,seed:Number(new URLSearchParams(location.search).get('seed'))||1});
+let lastTravel=null;
+const touches=new Map();let pinchGap=0;
+const touchGap=()=>{const [a,b]=[...touches.values()];return Math.hypot(a.x-b.x,a.y-b.y);};
+const soundSample=event=>({x:event.clientX/innerWidth,y:event.clientY/innerHeight,pressure:event.pressure||.5,kind:state.kind});
+const radii=new WeakMap();
+function drawingRadius(item){
+  if(!radii.has(item)){let r=0;for(const s of item.strokes||[])for(const p of s.points||[])r=Math.max(r,Math.hypot(p[0],p[1]));radii.set(item,Math.max(1,r*.03));}
+  return radii.get(item);
+}
+function soundSurroundings(position){
+  const e=environmentAt(position.toArray());sound.environment({primary:e.primary.id,neighbour:e.neighbour.id,blend:e.blend});
+  if(!sound.state.wanted)return;
+  const cam=world.camera,v=cam.position.clone(),tanHalf=Math.tan(cam.fov*Math.PI/360);let best=0,id=null;
+  for(const item of state.items){
+    const p=item.space?.position;if(!p)continue;
+    v.set(p[0],p[1],p[2]).applyMatrix4(cam.matrixWorldInverse);const depth=-v.z;if(depth<.5)continue;
+    v.set(p[0],p[1],p[2]).project(cam);if(Math.abs(v.x)>1.05||Math.abs(v.y)>1.05)continue;
+    const frac=drawingRadius(item)/(depth*tanHalf),area=Math.min(1,frac*frac/cam.aspect);
+    if(area>best){best=area;id=item.id;}
+  }
+  sound.salience(best,id);
+}
+function soundMotion(travel){
+  const t=performance.now()/1000;
+  if(lastTravel)sound.motion(Math.min(1,Math.sqrt(Math.max(0,travel-lastTravel.travel)/Math.max(.016,t-lastTravel.t)/40)));
+  lastTravel={travel,t};
+}
 const world=createWorld(canvas,{
   onMove:()=>updateControls(),
   onFrame:({yaw,position,travel,environment})=>{
+    soundMotion(travel);
+    soundSurroundings(position);
     document.querySelector('.needle').style.transform='rotate('+(-yaw*180/Math.PI)+'deg)';
     const distance=Math.hypot(position.x,position.y,position.z-22);
     $('place').textContent=distance<12?'the beginning':Math.round(distance)+' from the beginning';
@@ -18,7 +53,30 @@ const world=createWorld(canvas,{
   }
 });
 window.manuscript={state,world,get ready(){return state.ready;}};
+window.manuscript.sound=sound;
+const wakeControls=createIdleControls({
+  blocked:()=>world.state.making||state.saving||pointer!==null||!!document.querySelector('dialog[open]')||document.activeElement?.matches(':focus-visible:not(#world)'),
+  change:hidden=>document.body.classList.toggle('is-idle',hidden)
+});
+for(const type of ['pointermove','pointerdown','pointerup','pointercancel','keydown','keyup','wheel','focusin'])
+  document.addEventListener(type,wakeControls,{capture:true,passive:true});
+document.addEventListener('visibilitychange',wakeControls);
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',wakeControls));
 function wandered(){document.body.classList.add('has-wandered');}
+$('download-still').onclick=async()=>{try{await downloadStill(world);}catch{toast('Could not save this view. Please try again.');}};
+let animationCapture=null;
+$('download-animation').onclick=async()=>{
+  if(animationCapture){animationCapture.abort();return;}
+  animationCapture=new AbortController();
+  const button=$('download-animation');
+  button.setAttribute('aria-label','Cancel animation');
+  button.textContent='Preparing loop · cancel';
+  try{
+    await downloadAnimation(world,{signal:animationCapture.signal,onProgress:percent=>{button.textContent='Saving '+percent+'% · cancel';}});
+    toast('Your little moving world is saved.');
+  }catch(error){if(error.name!=='AbortError')toast(error.message);}
+  finally{animationCapture=null;button.textContent='Download animation';button.removeAttribute('aria-label');wakeControls();}
+};
 function toast(message){$('status').textContent=message;$('status').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('status').classList.remove('visible'),4200);}
 function updateControls(){
   $('speed').value=world.state.speed;
@@ -103,6 +161,7 @@ async function surprise(){
   const mark=world.beginDrawing(),env=environmentById(mark.space.environment);
   const seed=crypto.getRandomValues(new Uint32Array(1))[0],drawing=makeSurprise(seed,env,lastSurprise);
   lastSurprise=drawing.family;mark.strokes=drawing.strokes;state.saving=true;
+  sound.surprise({family:drawing.family,seed,strokes:drawing.strokes});
   $('surprise').disabled=true;$('surprise').classList.add('is-releasing');
   try{
     const item=await storeMark(mark);world.unfold(item,true);
@@ -117,6 +176,7 @@ async function surprise(){
 }
 function totalPoints(){return state.draft.strokes.reduce((n,s)=>n+s.points.length,0);}
 canvas.addEventListener('pointerdown',event=>{
+  if(touches.size>1)return;
   if(event.button!==0||state.saving)return;
   canvas.focus();canvas.setPointerCapture(event.pointerId);pointer={id:event.pointerId,x:event.clientX,y:event.clientY};
   wandered();
@@ -126,20 +186,23 @@ canvas.addEventListener('pointerdown',event=>{
     if(!p)return;
     stroke={kind:state.kind,ink:state.ink,seed:crypto.getRandomValues(new Uint32Array(1))[0],points:[p]};
     state.draft.strokes.push(stroke);
+    sound.strokeStart(soundSample(event));
   }
 });
 canvas.addEventListener('pointermove',event=>{
   if(!pointer||pointer.id!==event.pointerId)return;
   if(world.state.making&&stroke){
+    sound.strokeMove(soundSample(event));
     const p=world.drawingPoint(event.clientX,event.clientY),last=stroke.points.at(-1);
     if(p&&Math.hypot(p[0]-last[0],p[1]-last[1])>1.8&&stroke.points.length<512&&totalPoints()<4096){
       p[2]=event.pressure||.5;stroke.points.push(p);updateDraft();
     }
-  }else if(!world.state.making)world.look(event.clientX-pointer.x,event.clientY-pointer.y);
+  }else if(!world.state.making&&touches.size<2){const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;world.look(dx,dy);sound.look(dx,dy);}
   pointer.x=event.clientX;pointer.y=event.clientY;
 });
 function pointerEnd(){
   if(stroke){
+    sound.strokeEnd();
     if(stroke.points.length<2)state.draft.strokes=state.draft.strokes.filter(s=>s!==stroke);
     stroke=null;updateDraft();saveDraft();
   }
@@ -147,8 +210,22 @@ function pointerEnd(){
 }
 canvas.addEventListener('pointerup',pointerEnd);canvas.addEventListener('pointercancel',pointerEnd);canvas.addEventListener('lostpointercapture',pointerEnd);
 canvas.addEventListener('wheel',event=>{
+  if(event.ctrlKey&&!world.state.making)sound.pinch(-event.deltaY*.14);
   if(wheelTravel(event,world)){updateControls();wandered();}
 },{passive:false});
+canvas.addEventListener('pointerdown',event=>{
+  if(event.pointerType!=='touch')return;
+  touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  if(touches.size===2){pinchGap=touchGap();pointer=null;}
+},{capture:true});
+canvas.addEventListener('pointermove',event=>{
+  if(!touches.has(event.pointerId))return;
+  touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  if(touches.size!==2||world.state.making)return;
+  const gap=touchGap(),distance=(gap-pinchGap)*.06;pinchGap=gap;
+  world.dolly(distance);sound.pinch(distance);wandered();
+},{capture:true});
+for(const type of ['pointerup','pointercancel'])canvas.addEventListener(type,event=>touches.delete(event.pointerId),{capture:true});
 $('make').onclick=make;$('cancel').onclick=closeDrawing;$('leave').onclick=publish;$('surprise').onclick=surprise;
 $('undo').onclick=()=>{if(state.saving)return;state.draft.strokes.pop();updateDraft();saveDraft();};
 
@@ -156,7 +233,30 @@ document.querySelectorAll('[data-kind]').forEach(button=>button.onclick=()=>{sta
 $('speed').oninput=event=>{world.state.speed=Number(event.target.value);world.state.paused=false;updateControls();wandered();};
 $('pause').onclick=()=>{world.stopKeys();world.state.paused=!world.state.paused;updateControls();};
 $('elsewhere').onclick=()=>{const i=ENVIRONMENTS.findIndex(e=>e.id===world.state.environment.id);world.visitEnvironment(ENVIRONMENTS[(i+1)%ENVIRONMENTS.length].id);wandered();};
-$('turn').onclick=()=>{world.turnAround();wandered();};
+$('turn').onclick=()=>{world.turnAround();sound.turn();wandered();};
+function renderSound(s){
+  const button=$('sound'),started=s.wanted&&!s.loading;
+  if(started&&!s.needsTap&&!s.error&&[SOUND_FAILED,SOUND_PAUSED].includes($('status').textContent))$('status').classList.remove('visible');
+  button.dataset.state=s.loading?'loading':!s.wanted?'off':s.needsTap?'restore':s.muted?'muted':'on';
+  button.setAttribute('aria-pressed',String(s.wanted&&!s.muted&&!s.needsTap));
+  button.setAttribute('aria-label',{loading:'Loading sound',off:'Start sound',restore:'Tap to restore sound',muted:'Unmute sound',on:'Mute sound'}[button.dataset.state]);
+  button.toggleAttribute('aria-busy',s.loading);
+  $('volume').hidden=$('sound-reset').hidden=!started;
+  document.body.classList.toggle('sound-on',started);
+  if(s.needsTap)toast(SOUND_PAUSED);
+  else if(s.error)toast(SOUND_FAILED);
+}
+$('sound').onclick=()=>{
+  const s=sound.state;
+  if(!s.wanted)sound.start().catch(()=>toast(SOUND_FAILED));
+  else if(s.error)sound.retry();
+  else if(s.needsTap)sound.resume();
+  else sound.toggleMute();
+};
+$('volume').oninput=event=>sound.setVolume(Number(event.target.value));
+$('sound-reset').onclick=()=>sound.reset();
+document.addEventListener('pointerdown',()=>{if(sound.state.needsTap)sound.resume();},{capture:true});
+soundAvailable().then(ok=>{$('sound').hidden=!ok;});
 $('home').onclick=()=>{world.goHome();toast('Back at the beginning.');};
 $('latest').onclick=()=>{if(state.items.length){world.goTo(state.items.at(-1));wandered();}else toast('The next trace could be yours.');};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{toast('Full screen is not available in this window.');}};

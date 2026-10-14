@@ -47,7 +47,8 @@ The final result is deterministic procedural geometry, not AI generation.
 Other browsers poll for contributions every five seconds. Failed drawing
 writes keep the draft. Reduced motion starts still and skips automatic release
 animations. The About dialog contains the original artworks, source download
-and drawing export. No audio plays.
+and drawing export. Tap the speaker for the optional soundtrack; tap again to
+mute. Six related musical palettes respond to movement, drawing and nearby art.
 
 ## Extend the work
 
@@ -86,5 +87,8 @@ The browser check follows the spatial UI; the previous 2D raster-cache check
 does not apply to the WebGL renderer.
 
 Code: MIT. Shared artwork: CC BY 4.0, see [ART-LICENSE.md](ART-LICENSE.md).
-The visual release is silent. The next phase uses the maker's existing music,
-changing gradually with exploration, with opt-in playback and a visible mute.
+Music: all rights reserved, see [MUSIC-LICENSE.md](MUSIC-LICENSE.md). The source
+download excludes recordings. Licensed release assets live in `music/kit-b3`;
+the build copies them to `/sound-assets/kit-b3/`. With no installed music, the
+world runs in silence. The publisher can regenerate the lossless release kit
+with `bun scripts/package-music.js /path/to/approved-wav-kit` and FFmpeg.

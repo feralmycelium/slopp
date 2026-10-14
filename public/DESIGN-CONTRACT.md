@@ -25,7 +25,7 @@ texture, scale and relationships. They are not a catalogue to reproduce.
 | Complexity | 128 strokes, 512 points per stroke, 4,096 points total |
 | World boundary | Camera bounded to ±49,000; saved coordinates validated within ±50,000 |
 | Existing contributions | Append only; no visitor edit/delete API |
-| Sound | Silent; an ambient album layer is a later phase |
+| Sound | Six connected stem palettes; opt-in playback, mute and independent volume |
 
 The world uses a repeating spatial field to give procedural places stable
 identities. Contributions remain individually stored at their original
@@ -56,6 +56,26 @@ camera rolls, countdowns, sound autoplay or attention rewards.
 
 ## What can grow
 
+Exploration controls stay visible for the first thirty seconds, then fade after
+three seconds without input. Pointer movement, touch or keys restore them
+immediately. Drawing tools, open dialogs and keyboard-focused controls stay
+visible. The fade lasts 800ms and is removed with reduced motion.
+
+Contact me opens email to alex@sloppworld.com. Download still saves the current
+canvas as a PNG without interface elements, with a hand-drawn sloppworld.com
+signature. The lettering follows a curve selected around marks in the captured
+composition, borrowing a nearby ink and varying its placement between exports.
+Capturing a still does not pause or move the world.
+
+Download animation makes an eight-second loop from the current view. A separate
+snapshot follows a closed camera path with periodic artwork motion, so position
+and motion join continuously. The live world remains free to explore. Letter
+strokes write in order over four seconds, hold for two, then fade for two.
+WebCodecs exports all 240 frames at 30 fps, independent of rendering speed;
+older browsers use real-time recording. MP4 or WebM is selected by browser
+support. Pause and reduced motion produce a still loop. Exports contain no
+controls or audio, can be cancelled, and stop if the tab is hidden.
+
 New abstract environments, local palettes, drawing treatments, spatial
 relationships, export tools and performance improvements can extend this
 language. Each environment should have a distinguishable silhouette, a
@@ -75,12 +95,17 @@ The current preview follows the maker's request for focused checks and direct
 visual inspection before broader testing. Do not turn a creative preview into
 a security audit or exhaustive review cycle.
 
-## Future sound
+## Sound
 
-The visual release comes first. The next phase uses Alex's existing music
-library, with slow crossfades between environments and layers emerging as
-visitors explore. Sound needs an explicit start, permanently available mute
-and independent volume. The visual world must remain complete in silence.
+Alex's stem recordings form six distinct but related musical palettes.
+Movement, proximity, drawing and surprise shapes gently shape the sound;
+sparse rests give fuller moments room. The mix uses softened attacks, a
+-3 dB high shelf at 2.8 kHz and shared reverb. Playback starts only when the
+visitor taps the speaker, with mute and independent volume available while
+exploring or drawing. The visual world remains complete in silence.
+
+The music is all rights reserved, separate from the open-source code and
+shared drawings. See MUSIC-LICENSE.md. Downloaded source excludes recordings.
 
 Environment definitions and the surprise deck live in `public/environments.js`.
 Shared data limits live in `public/rules.js`. Update this contract with changes

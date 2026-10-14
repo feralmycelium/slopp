@@ -24,8 +24,9 @@ the actual rendered result before reporting it ready.
 
 Current ruling: present creative previews before heavy testing. No additional
 security audit or exhaustive review cycle. A local preview is not a public
-deployment. The 13 October release is visual; adaptive sound using Alex's
-existing music library is the next phase, with explicit start and visible mute.
+deployment. Alex approved publishing the stem soundtrack on 14 October, with
+explicit start and visible mute. Music remains all rights reserved and is
+excluded from the downloadable source; see MUSIC-LICENSE.md.
 
 Keep the plan and progress in ENVIRONMENTS-PLAN.md and the local PLAN.md ledger.
 Code is MIT and shared contributions are CC BY 4.0. Preserve the source and

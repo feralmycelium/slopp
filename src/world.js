@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {loopMotion} from '../public/loop.js';
 
 import {INKS,ENVIRONMENTS,environmentAt,environmentById,seeded,hash,traceDepth} from '../public/environments.js';
 import {landscape} from './art.js';
@@ -8,6 +9,14 @@ const TAU = Math.PI * 2;
 const V = (x=0,y=0,z=0) => new THREE.Vector3(x,y,z);
 const random=seeded;
 const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+
+function renderWorld(renderer,scene,preview,camera) {
+  renderer.render(scene,camera);
+  if(!preview.children.length)return;
+  const autoClear=renderer.autoClear;renderer.autoClear=false;
+  try{renderer.clearDepth();renderer.render(preview,camera);}
+  finally{renderer.autoClear=autoClear;}
+}
 
 export function wheelTravel(event,world) {
   event.preventDefault();
@@ -49,7 +58,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const state={speed:reduced.matches?0:24,paused:reduced.matches,making:false,yaw:0,pitch:0,time:0,items:[],travel:0,environment:ENVIRONMENTS[0]};
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
   const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map();
-  const preview=new THREE.Group();scene.add(preview);
+  const preview=new THREE.Scene();preview.fog=scene.fog;
   let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
 
@@ -223,6 +232,33 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   function setItems(items) {state.items=items;syncTraces();}
   function setKey(key,down){if(down){flight=null;keys.add(key.toLowerCase());}else keys.delete(key.toLowerCase());}
   function stopKeys(){keys.clear();pinchRemaining=0;flight=null;}
+  function createLoopCapture(width,height){
+    const snapshot=scene.clone(),foreground=preview.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
+    for(const layer of [snapshot,foreground])layer.traverse(object=>{
+      if(!object.geometry)return;
+      if(!geometries.has(object.geometry))geometries.set(object.geometry,object.geometry.clone());
+      object.geometry=geometries.get(object.geometry);
+    });
+    const output=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+    output.setSize(width,height,false);output.setClearColor(PAPER);
+    view.aspect=width/height;view.updateProjectionMatrix();
+    const time=state.time,ripple=uniforms.uRipple.value.clone(),rippleStart=uniforms.uRippleStart.value;
+    const moving=!state.paused&&!reduced.matches,amount=.65+state.speed*.025;
+    return {
+      moving,
+      render(seconds){
+        const motion=loopMotion(moving?seconds:0);
+        view.position.copy(origin).add(V(motion.x,motion.y,motion.z).multiplyScalar(amount).applyQuaternion(view.quaternion));
+        view.updateMatrixWorld();
+        const liveTime=uniforms.uTime.value,liveRipple=uniforms.uRipple.value.clone(),liveStart=uniforms.uRippleStart.value;
+        uniforms.uTime.value=time+motion.time;uniforms.uRipple.value.copy(ripple);uniforms.uRippleStart.value=rippleStart;
+        try{renderWorld(output,snapshot,foreground,view);}
+        finally{uniforms.uTime.value=liveTime;uniforms.uRipple.value.copy(liveRipple);uniforms.uRippleStart.value=liveStart;}
+        return output.domElement;
+      },
+      dispose(){geometries.forEach(geometry=>geometry.dispose());output.dispose();output.forceContextLoss();}
+    };
+  }
   function frame(now) {
     const dt=Math.min((now-last)/1000,.04);last=now;
     if(!document.hidden) {
@@ -247,7 +283,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         movement.multiplyScalar(dt).addScaledVector(direction,pinchStep);camera.position.add(movement);state.travel+=movement.length();camera.position.clampScalar(-49000,49000);
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
-      renderer.render(scene,camera);
+      renderWorld(renderer,scene,preview,camera);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
     requestAnimationFrame(frame);
@@ -256,5 +292,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   reduced.addEventListener('change',e=>{if(e.matches){state.paused=true;state.speed=0;}onMove();});
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
   return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
+    captureCanvas(){renderWorld(renderer,scene,preview,camera);return canvas;},
+    createLoopCapture,
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }
