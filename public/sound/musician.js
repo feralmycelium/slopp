@@ -96,11 +96,11 @@ export function createMusician({seed=1}={}){
       return [glint(id,note,t+.003,PALETTES[id].fineGain-13),voice({t:t+.01,palette:id,unit:'held',note,gain:-22,attack:.4,release:2.5,dur:2.5,role:'breath',send:.6})];
     },
     salience({t,prominence,id,x,item}){
-      const before=salOn?salId:undefined,tau=prominence>sal?1:3,dt=salT===null?1/30:clamp(t-salT,0,1);salT=t;sal+=(prominence-sal)*(1-Math.exp(-dt/tau));
+      const tau=prominence>sal?1:3,dt=salT===null?1/30:clamp(t-salT,0,1);salT=t;sal+=(prominence-sal)*(1-Math.exp(-dt/tau));
       if(!salOn&&sal>RULES.salienceEnter){salOn=true;salId=id;}
       else if(salOn&&sal<RULES.salienceExit)salOn=false;
       if(salOn)salId=id;
-      return salOn&&salId!==before?hear({t,id,item,x}):[];
+      return salOn?hear({t,id,item,x}):[];
     },
     surprise({t,seed:s,strokes,environment}){
       if(environment)this.environment(environment);
@@ -149,4 +149,3 @@ export function createMusician({seed=1}={}){
     },
   };
 }
-

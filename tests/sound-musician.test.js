@@ -178,6 +178,21 @@ test('the turn-around button gets the same restrained answer as looking: a glint
 
 const trace=id=>({id,space:{environment:'fold'},strokes:[{kind:'line',points:[[0,0],[20,10],[40,0]]},{kind:'line',points:[[0,0],[200,40],[400,0]]},{kind:'form',points:[[0,0],[80,0],[80,80],[0,80]]}]});
 const see=(m,t,id,x=.3)=>m.salience({t,prominence:.2,id,x,item:trace(id)});
+test('a prominent drawing waits for the hearing gap and stroke guard without needing to leave the view',()=>{
+  const m=createMusician({seed:3});m.salience({t:1,prominence:0,id:null});
+  expect(see(m,2,'a').length).toBeGreaterThan(0);
+  expect(see(m,3,'b')).toEqual([]);
+  expect(see(m,7.9,'b')).toEqual([]);
+  expect(see(m,8,'b').length).toBeGreaterThan(0);
+  expect(see(m,15,'b')).toEqual([]);
+  m.strokeStart({t:15.2,x:.5,y:.5,kind:'line',environment:env()});
+  expect(see(m,15.5,'c')).toEqual([]);
+  m.strokeEnd({t:16});
+  expect(see(m,17.4,'c')).toEqual([]);
+  expect(see(m,17.5,'c').length).toBeGreaterThan(0);
+  expect(m.mix(17.5).restDuck).toBe(-6);
+  expect(m.mix(20.1).restDuck).toBe(0);
+});
 test('a drawing that comes into view is heard once, softly, from its side of the screen, in the palette playing now',()=>{
   const m=createMusician({seed:3});run(m,0,1);m.salience({t:1,prominence:0,id:null,x:0,item:null});
   const first=see(m,2,'a',.8);
