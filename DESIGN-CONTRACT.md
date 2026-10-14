@@ -63,7 +63,9 @@ visible. The fade lasts 800ms and is removed with reduced motion.
 
 Contact me opens email to alex@sloppworld.com. Download still saves the current
 canvas as a PNG without interface elements, with a hand-drawn sloppworld.com
-signature. Capturing a still does not pause or move the world.
+signature. The lettering follows a curve selected around marks in the captured
+composition, borrowing a nearby ink and varying its placement between exports.
+Capturing a still does not pause or move the world.
 
 New abstract environments, local palettes, drawing treatments, spatial
 relationships, export tools and performance improvements can extend this

@@ -10,19 +10,65 @@ const letters={
   c:'M12 6 Q4 0 1 9 Q-1 19 12 16',
   m:'M1 17 L1 5 L2 10 Q6 0 9 8 L10 17 L10 9 Q16 0 18 9 L19 18'
 };
-export function drawSignature(ctx,width,height){
-  const scale=Math.max(.65,Math.min(width/620,height/360,2.4));
-  const text='sloppworld.com',advance=17;
-  ctx.save();ctx.translate(width-(text.length*advance+24)*scale,height-36*scale);
-  ctx.scale(scale,scale);ctx.lineCap='round';ctx.lineJoin='round';
-  for(let i=0;i<text.length;i++){
-    ctx.save();ctx.translate(i*advance,Math.sin(i*2.4)*1.7);ctx.rotate(Math.sin(i*1.7)*.075);
-    const path=new Path2D(letters[text[i]]);
-    ctx.strokeStyle='#f0e8d9';ctx.lineWidth=4.7;ctx.stroke(path);
-    ctx.strokeStyle='#2b4587';ctx.lineWidth=1.65;ctx.stroke(path);ctx.restore();
+const text='sloppworld.com';
+export function planSignature(pixels,width,height,random=Math.random){
+  const w=pixels.width,h=pixels.height,nearest=new Int32Array(w*h).fill(-1);
+  const distance=new Float32Array(w*h).fill(Infinity);
+  for(let i=0;i<nearest.length;i++){
+    const p=i*4;
+    if(Math.max(Math.abs(pixels.data[p]-240),Math.abs(pixels.data[p+1]-232),Math.abs(pixels.data[p+2]-217))>38){nearest[i]=i;distance[i]=0;}
   }
-  ctx.strokeStyle='#fd6e22';ctx.lineWidth=1.2;ctx.beginPath();
-  ctx.moveTo(5,24);ctx.bezierCurveTo(58,29,142,21,221,25);ctx.stroke();ctx.restore();
+  function borrow(i,j){
+    if(j<0||j>=nearest.length||nearest[j]<0)return;
+    const source=nearest[j],d=Math.hypot((i%w-source%w)*width/w,(Math.floor(i/w)-Math.floor(source/w))*height/h);
+    if(d<distance[i]){distance[i]=d;nearest[i]=source;}
+  }
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=y*w+x;if(x)borrow(i,i-1);if(y)borrow(i,i-w);
+  }
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){
+    const i=y*w+x;if(x<w-1)borrow(i,i+1);if(y<h-1)borrow(i,i+w);
+  }
+  const scale=Math.min(width,height)/520;
+  function curve(cx,cy,rotation,bend){
+    const span=204*scale,cos=Math.cos(rotation),sin=Math.sin(rotation);
+    return Array.from(text,(letter,i)=>{
+      const t=i/(text.length-1),x=(t-.5)*span,y=4*bend*t*(1-t);
+      return {letter,x:cx+x*cos-y*sin,y:cy+x*sin+y*cos,angle:rotation+Math.atan2(4*bend*(1-2*t),span)};
+    });
+  }
+  let best={glyphs:curve(width*.5,height*.5,0,28*scale),scale,ink:'#2b4587'},score=Infinity;
+  for(let n=0;n<650;n++){
+    const glyphs=curve(width*(.13+random()*.74),height*(.13+random()*.74),(random()-.5)*1.1,(random()<.5?-1:1)*(25+random()*35)*scale);
+    if(glyphs.some(g=>g.x<=30*scale||g.x>=width-30*scale||g.y<=30*scale||g.y>=height-30*scale))continue;
+    let cost=0,ink=best.ink,closest=Infinity;
+    for(const g of glyphs){
+      const x=Math.min(w-1,Math.max(0,Math.round((g.x+6*scale)*w/width)));
+      const y=Math.min(h-1,Math.max(0,Math.round((g.y+9*scale)*h/height))),i=y*w+x;
+      const d=distance[i];
+      cost+=Number.isFinite(d)?Math.abs(d-24*scale)/scale+Math.max(0,17*scale-d)*5/scale:20;
+      if(d<closest){
+        closest=d;const p=nearest[i]*4;
+        ink='#'+Array.from(pixels.data.slice(p,p+3),v=>v.toString(16).padStart(2,'0')).join('');
+      }
+    }
+    cost/=glyphs.length;
+    if(cost<score){score=cost;best={glyphs,scale,ink};}
+  }
+  return best;
+}
+export function drawSignature(ctx,width,height){
+  const sample=document.createElement('canvas');sample.width=160;sample.height=Math.max(1,Math.round(160*height/width));
+  const sampleCtx=sample.getContext('2d',{willReadFrequently:true});sampleCtx.drawImage(ctx.canvas,0,0,sample.width,sample.height);
+  const plan=planSignature(sampleCtx.getImageData(0,0,sample.width,sample.height),width,height);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(const g of plan.glyphs){
+    ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.angle);ctx.scale(plan.scale,plan.scale);
+    const path=new Path2D(letters[g.letter]);
+    ctx.strokeStyle='#f0e8d9';ctx.lineWidth=4;ctx.stroke(path);
+    ctx.strokeStyle=plan.ink;ctx.lineWidth=1.65;ctx.stroke(path);ctx.restore();
+  }
+  ctx.restore();
 }
 export async function downloadStill(world){
   const source=world.captureCanvas(),image=document.createElement('canvas');

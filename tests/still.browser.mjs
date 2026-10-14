@@ -11,10 +11,19 @@ try{
   const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'Download still',exact:true}).click()]);
   assert.match(download.suggestedFilename(),/^slopp-.*\.png$/);
   await download.saveAs('/tmp/slopp-still.png');
+  await page.mouse.move(400,300);
+  await page.getByRole('button',{name:'Visit another environment',exact:true}).click();
+  await page.waitForTimeout(4200);
+  await page.mouse.move(200,300);
+  const [another]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'Download still',exact:true}).click()]);
+  await another.saveAs('/tmp/slopp-still-another.png');
   await page.screenshot({path:'/tmp/slopp-controls.png'});
   await page.setViewportSize({width:390,height:844});
   await page.mouse.move(200,300);
   await page.screenshot({path:'/tmp/slopp-mobile.png'});
+  await page.mouse.move(150,350);
+  const [portrait]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'Download still',exact:true}).click()]);
+  await portrait.saveAs('/tmp/slopp-still-portrait.png');
   assert.deepEqual(errors,[]);
   console.log('Contact destination, PNG download, desktop/mobile render and page errors checked.');
 }finally{await browser.close();}
