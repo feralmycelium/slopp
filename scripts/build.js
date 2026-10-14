@@ -1,7 +1,7 @@
 import {mkdir,cp,copyFile,writeFile,readFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const root=resolve(import.meta.dir,'..');
-const client=await Bun.build({entrypoints:[root+'/src/world.js'],outdir:root+'/public',target:'browser',format:'esm',minify:true});
+const client=await Bun.build({entrypoints:[root+'/src/world.js',root+'/src/video-encoder.js'],outdir:root+'/public',target:'browser',format:'esm',minify:true});
 if(!client.success)throw new Error(client.logs.join('\n'));
 for(const name of ['DESIGN-CONTRACT.md','LICENSE','ART-LICENSE.md'])await copyFile(root+'/'+name,root+'/public/'+name);
 await rm(root+'/public/source.zip',{force:true});

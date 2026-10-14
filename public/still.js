@@ -1,3 +1,4 @@
+import {handwriting,LOOP_SECONDS} from './loop.js';
 const letters={
   s:'M11 5 Q3 0 2 6 Q1 9 8 10 Q15 12 10 16 Q5 20 1 15',
   l:'M4 17 Q2 9 5 0 Q9 -5 8 4 Q7 10 3 12 Q1 17 8 17',
@@ -62,17 +63,33 @@ export function signatureForCanvas(ctx,width,height){
   const sampleCtx=sample.getContext('2d',{willReadFrequently:true});sampleCtx.drawImage(ctx.canvas,0,0,sample.width,sample.height);
   return planSignature(sampleCtx.getImageData(0,0,sample.width,sample.height),width,height);
 }
+const penPaths=new Map();
+function strokes(letter){
+  if(!penPaths.has(letter)){
+    const paths=letters[letter].match(/M[^M]+/g).map(d=>{
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);
+      return {path:new Path2D(d),length:path.getTotalLength()};
+    });
+    penPaths.set(letter,paths);
+  }
+  return penPaths.get(letter);
+}
 export function paintSignature(ctx,plan,seconds=null){
+  const motion=seconds===null?{progress:1,opacity:1}:handwriting(seconds);
+  let remaining=motion.progress*plan.glyphs.reduce((sum,g)=>sum+strokes(g.letter).reduce((n,s)=>n+s.length,0),0);
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.globalAlpha*=motion.opacity;
   for(const [i,g] of plan.glyphs.entries()){
-    const reveal=seconds===null?1:Math.min(1,Math.max(0,(seconds-i*.075)/.45));
-    if(!reveal)continue;
-    const sway=seconds===null?0:Math.sin(seconds*1.3+i*.35)*2;
+    if(remaining<=0)break;
+    const sway=seconds===null?0:Math.sin(seconds/LOOP_SECONDS*Math.PI*2+i*.35)*2;
     ctx.save();ctx.translate(g.x,g.y+sway*plan.scale);ctx.rotate(g.angle+sway*.008);ctx.scale(plan.scale,plan.scale);
-    const path=new Path2D(letters[g.letter]);
-    if(reveal<1){ctx.setLineDash([100,100]);ctx.lineDashOffset=100*(1-reveal);}
-    ctx.strokeStyle='#f0e8d9';ctx.lineWidth=4;ctx.stroke(path);
-    ctx.strokeStyle=plan.ink;ctx.lineWidth=1.65;ctx.stroke(path);ctx.restore();
+    for(const {path,length} of strokes(g.letter)){
+      if(remaining<=0)break;
+      ctx.setLineDash(remaining<length?[length,length+1]:[]);ctx.lineDashOffset=Math.max(0,length-remaining);
+      ctx.strokeStyle='#f0e8d9';ctx.lineWidth=4;ctx.stroke(path);
+      ctx.strokeStyle=plan.ink;ctx.lineWidth=1.65;ctx.stroke(path);remaining-=length;
+    }
+    ctx.restore();
   }
   ctx.restore();
 }

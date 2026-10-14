@@ -37,8 +37,9 @@ $('download-animation').onclick=async()=>{
   animationCapture=new AbortController();
   const button=$('download-animation');
   button.setAttribute('aria-label','Cancel animation');
+  button.textContent='Preparing loop · cancel';
   try{
-    await downloadAnimation(world,{signal:animationCapture.signal,onProgress:seconds=>{button.textContent='Saving '+seconds+'s · cancel';}});
+    await downloadAnimation(world,{signal:animationCapture.signal,onProgress:percent=>{button.textContent='Saving '+percent+'% · cancel';}});
     toast('Your little moving world is saved.');
   }catch(error){if(error.name!=='AbortError')toast(error.message);}
   finally{animationCapture=null;button.textContent='Download animation';button.removeAttribute('aria-label');wakeControls();}

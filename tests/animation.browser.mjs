@@ -9,12 +9,10 @@ try{
   await page.goto(process.env.PREVIEW_URL||'http://127.0.0.1:8784');
   await page.waitForFunction(()=>window.manuscript?.ready);
   assert.equal(await page.getByRole('button',{name:'Download animation',exact:true}).count(),1);
-  const started=Date.now();
   const [download]=await Promise.all([
     page.waitForEvent('download',{timeout:60000}),
     page.getByRole('button',{name:'Download animation',exact:true}).click()
   ]);
-  assert.ok(Date.now()-started>=7800,'Capture lasts eight seconds');
   assert.match(download.suggestedFilename(),/^slopp-.*\.(mp4|webm)$/);
   const path='/tmp/slopp-animation.'+download.suggestedFilename().split('.').at(-1);
   await download.saveAs(path);

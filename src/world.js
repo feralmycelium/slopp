@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {loopMotion} from '../public/loop.js';
 
 import {INKS,ENVIRONMENTS,environmentAt,environmentById,seeded,hash,traceDepth} from '../public/environments.js';
 import {landscape} from './art.js';
@@ -50,7 +51,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
   const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map();
   const preview=new THREE.Group();scene.add(preview);
-  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null,captureFrame=null;
+  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
 
   function material(color,thin=false,opacity=1,animated=true,motion='flow') {
@@ -223,6 +224,33 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   function setItems(items) {state.items=items;syncTraces();}
   function setKey(key,down){if(down){flight=null;keys.add(key.toLowerCase());}else keys.delete(key.toLowerCase());}
   function stopKeys(){keys.clear();pinchRemaining=0;flight=null;}
+  function createLoopCapture(width,height){
+    const snapshot=scene.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
+    snapshot.traverse(object=>{
+      if(!object.geometry)return;
+      if(!geometries.has(object.geometry))geometries.set(object.geometry,object.geometry.clone());
+      object.geometry=geometries.get(object.geometry);
+    });
+    const output=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+    output.setSize(width,height,false);output.setClearColor(PAPER);
+    view.aspect=width/height;view.updateProjectionMatrix();
+    const time=state.time,ripple=uniforms.uRipple.value.clone(),rippleStart=uniforms.uRippleStart.value;
+    const moving=!state.paused&&!reduced.matches,amount=.65+state.speed*.025;
+    return {
+      moving,
+      render(seconds){
+        const motion=loopMotion(moving?seconds:0);
+        view.position.copy(origin).add(V(motion.x,motion.y,motion.z).multiplyScalar(amount).applyQuaternion(view.quaternion));
+        view.updateMatrixWorld();
+        const liveTime=uniforms.uTime.value,liveRipple=uniforms.uRipple.value.clone(),liveStart=uniforms.uRippleStart.value;
+        uniforms.uTime.value=time+motion.time;uniforms.uRipple.value.copy(ripple);uniforms.uRippleStart.value=rippleStart;
+        try{output.render(snapshot,view);}
+        finally{uniforms.uTime.value=liveTime;uniforms.uRipple.value.copy(liveRipple);uniforms.uRippleStart.value=liveStart;}
+        return output.domElement;
+      },
+      dispose(){geometries.forEach(geometry=>geometry.dispose());output.dispose();output.forceContextLoss();}
+    };
+  }
   function frame(now) {
     const dt=Math.min((now-last)/1000,.04);last=now;
     if(!document.hidden) {
@@ -248,7 +276,6 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
       renderer.render(scene,camera);
-      captureFrame?.(canvas,now);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
     requestAnimationFrame(frame);
@@ -258,6 +285,6 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
   return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
     captureCanvas(){renderer.render(scene,camera);return canvas;},
-    captureFrames(callback){captureFrame=callback;return ()=>{if(captureFrame===callback)captureFrame=null;};},
+    createLoopCapture,
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }
