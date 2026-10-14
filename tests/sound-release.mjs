@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile,stat} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 
 const root=new URL('../',import.meta.url);
 const manifest=JSON.parse(await readFile(new URL('dist/client/sound-assets/kit-b3/manifest.json',root),'utf8'));
@@ -11,7 +12,7 @@ for(const unit of manifest.units){
   assert(file.length<25*1024*1024,'audio must fit the hosting asset limit');
 }
 assert((await stat(new URL('dist/client/MUSIC-LICENSE.md',root))).size>0);
-const archive=execFileSync('unzip',['-Z1',new URL('public/source.zip',root).pathname],{encoding:'utf8'}).split('\n');
+const archive=execFileSync('unzip',['-Z1',fileURLToPath(new URL('public/source.zip',root))],{encoding:'utf8'}).split('\n');
 assert(archive.includes('MUSIC-LICENSE.md'));
 assert(!archive.some(p=>/\.(wav|flac|mp3|aiff?)$/i.test(p)),'the open-source download must not include reserved music');
 assert(!archive.some(p=>/kit-a|__pycache__|\.sound-assets/.test(p)),'private source assets must stay outside the source download');
