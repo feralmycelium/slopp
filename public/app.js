@@ -1,5 +1,7 @@
 import {createWorld,PALETTE,wheelTravel} from './world.js';
 import {SEEDS} from './rules.js';
+import {downloadStill} from './still.js';
+import {createIdleControls} from './idle.js';
 import {ENVIRONMENTS,environmentById,makeSurprise} from './environments.js';
 
 const $=id=>document.getElementById(id);
@@ -18,7 +20,16 @@ const world=createWorld(canvas,{
   }
 });
 window.manuscript={state,world,get ready(){return state.ready;}};
+const wakeControls=createIdleControls({
+  blocked:()=>world.state.making||state.saving||pointer!==null||!!document.querySelector('dialog[open]')||document.activeElement?.matches(':focus-visible:not(#world)'),
+  change:hidden=>document.body.classList.toggle('is-idle',hidden)
+});
+for(const type of ['pointermove','pointerdown','pointerup','pointercancel','keydown','keyup','wheel','focusin'])
+  document.addEventListener(type,wakeControls,{capture:true,passive:true});
+document.addEventListener('visibilitychange',wakeControls);
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',wakeControls));
 function wandered(){document.body.classList.add('has-wandered');}
+$('download-still').onclick=async()=>{try{await downloadStill(world);}catch{toast('Could not save this view. Please try again.');}};
 function toast(message){$('status').textContent=message;$('status').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('status').classList.remove('visible'),4200);}
 function updateControls(){
   $('speed').value=world.state.speed;

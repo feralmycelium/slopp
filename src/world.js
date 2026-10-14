@@ -256,5 +256,6 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   reduced.addEventListener('change',e=>{if(e.matches){state.paused=true;state.speed=0;}onMove();});
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
   return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
+    captureCanvas(){renderer.render(scene,camera);return canvas;},
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }

@@ -56,6 +56,15 @@ camera rolls, countdowns, sound autoplay or attention rewards.
 
 ## What can grow
 
+Exploration controls stay visible for the first thirty seconds, then fade after
+three seconds without input. Pointer movement, touch or keys restore them
+immediately. Drawing tools, open dialogs and keyboard-focused controls stay
+visible. The fade lasts 800ms and is removed with reduced motion.
+
+Contact me opens email to alex@sloppworld.com. Download still saves the current
+canvas as a PNG without interface elements, with a hand-drawn sloppworld.com
+signature. Capturing a still does not pause or move the world.
+
 New abstract environments, local palettes, drawing treatments, spatial
 relationships, export tools and performance improvements can extend this
 language. Each environment should have a distinguishable silhouette, a
