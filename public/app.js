@@ -55,7 +55,7 @@ const world=createWorld(canvas,{
 const invitation=createInvitationClock({
   visible:()=>document.visibilityState==='visible',
   change:phase=>{
-    if(phase==='show')world.ghost(invitationGesture({environment:world.state.environment||ENVIRONMENTS[0],seed:crypto.getRandomValues(new Uint32Array(1))[0],width:innerWidth,height:innerHeight}),{draw:!matchMedia('(prefers-reduced-motion: reduce)').matches});
+    if(phase==='show'){world.ghost(invitationGesture({environment:world.state.environment||ENVIRONMENTS[0],seed:crypto.getRandomValues(new Uint32Array(1))[0],width:innerWidth,height:innerHeight}),{draw:!matchMedia('(prefers-reduced-motion: reduce)').matches});setTimeout(()=>world.dismissGhost('invitation'),7000);}
     else{world.dismissGhost('invitation');document.body.classList.add('has-wandered');}
   }
 });
