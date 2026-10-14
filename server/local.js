@@ -1,4 +1,4 @@
-import { mkdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Database } from "bun:sqlite";
@@ -8,6 +8,7 @@ import { applySchema, createD1Adapter } from "./sqlite.js";
 
 const projectDirectory = fileURLToPath(new URL("..", import.meta.url));
 const publicDirectory = join(projectDirectory, "public");
+const soundDirectory = join(projectDirectory, existsSync(join(projectDirectory, ".sound-assets")) ? ".sound-assets" : "music");
 
 export const createDatabase = (filename = join(projectDirectory, "data", "world.sqlite")) => {
   mkdirSync(dirname(filename), { recursive: true });
@@ -17,16 +18,21 @@ export const createDatabase = (filename = join(projectDirectory, "data", "world.
   return { database, db: createD1Adapter(database) };
 };
 
-const staticResponse = (request, directory) => {
-  const pathname = new URL(request.url).pathname;
+const staticResponse = (request, directory, prefix = "/") => {
+  const pathname = "/" + new URL(request.url).pathname.slice(prefix.length);
   const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
   const filename = resolve(directory, relativePath);
   if (relative(directory, filename).startsWith("..") || !statSync(filename, { throwIfNoEntry: false })?.isFile()) return new Response("Not found", { status: 404 });
   return new Response(Bun.file(filename));
 };
 
-export const createApp = ({ db, assetsDirectory = publicDirectory }) => ({
-  fetch: (request) => new URL(request.url).pathname.startsWith("/api/") ? handleApi(request, db) : staticResponse(request, assetsDirectory),
+export const createApp = ({ db, assetsDirectory = publicDirectory, soundAssetsDirectory = soundDirectory }) => ({
+  fetch: (request) => {
+    const { pathname } = new URL(request.url);
+    if (pathname.startsWith("/api/")) return handleApi(request, db);
+    if (pathname.startsWith("/sound-assets/")) return staticResponse(request, soundAssetsDirectory, "/sound-assets/");
+    return staticResponse(request, assetsDirectory);
+  },
 });
 
 if (import.meta.main) {

@@ -26,6 +26,8 @@ controls; Web Request API on Bun/SQLite locally or Worker/D1 when deployed.
 Alex approved the six-environment build for public release on 13 October.
 Keep release checks focused on drawing, shared persistence and exploration.
 
-The visual release is silent. The next phase uses Alex's existing music library:
-slow crossfades between environments and layers that change with exploration.
-Sound starts only by choice, with a permanent mute and independent volume.
+The optional soundtrack uses Alex's stem recordings across six related musical
+palettes. Movement, drawing, proximity and surprise shapes influence the music,
+with space for quiet. Sound starts only by choice, with mute and independent
+volume. The music remains all rights reserved; code and drawing licences are
+unchanged.

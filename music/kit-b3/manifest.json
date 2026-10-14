@@ -1,0 +1,2634 @@
+{
+  "version": "B3",
+  "title": "slopp · stem soundtrack",
+  "license": "All rights reserved. See /MUSIC-LICENSE.md.",
+  "units": [
+    {
+      "file": "flow-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 16.5,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 15.6,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-81.flac",
+      "seconds": 2.58,
+      "norm_db": 13.6,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 13.3,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-88.flac",
+      "seconds": 2.6,
+      "norm_db": 13,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 88,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-91.flac",
+      "seconds": 2.6,
+      "norm_db": 14.6,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 91,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-fine-93.flac",
+      "seconds": 2.6,
+      "norm_db": 11.9,
+      "palette": "flow",
+      "unit": "fine",
+      "note": 93,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "flow-broad-0.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "flow",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-broad-1.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "flow",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-broad-2.flac",
+      "seconds": 6,
+      "norm_db": -1.4,
+      "palette": "flow",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-held-0.flac",
+      "seconds": 12,
+      "norm_db": 0.8,
+      "palette": "flow",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-held-1.flac",
+      "seconds": 12,
+      "norm_db": 3.8,
+      "palette": "flow",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-held-2.flac",
+      "seconds": 12,
+      "norm_db": 0.7,
+      "palette": "flow",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-held-3.flac",
+      "seconds": 12,
+      "norm_db": 0.4,
+      "palette": "flow",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "flow-rest-0.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "flow",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "flow-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "flow",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "flow-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "flow",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-0.flac",
+      "seconds": 6,
+      "norm_db": 0,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-1.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-2.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-3.flac",
+      "seconds": 6,
+      "norm_db": -0.5,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-4.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-5.flac",
+      "seconds": 6,
+      "norm_db": 0,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-broad-6.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "fold",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-held-0.flac",
+      "seconds": 12,
+      "norm_db": -0.5,
+      "palette": "fold",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-held-1.flac",
+      "seconds": 12,
+      "norm_db": -0.9,
+      "palette": "fold",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-held-2.flac",
+      "seconds": 12,
+      "norm_db": -1,
+      "palette": "fold",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-held-3.flac",
+      "seconds": 12,
+      "norm_db": 0.8,
+      "palette": "fold",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-held-4.flac",
+      "seconds": 12,
+      "norm_db": 0.4,
+      "palette": "fold",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-rest-0.flac",
+      "seconds": 18,
+      "norm_db": 15.2,
+      "palette": "fold",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 15.7,
+      "palette": "fold",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 16.3,
+      "palette": "fold",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "fold-rest-3.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "fold",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "soft-fine-64.flac",
+      "seconds": 2.6,
+      "norm_db": 8.5,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 64,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-67.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 67,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-69.flac",
+      "seconds": 1.6,
+      "norm_db": 10.1,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 69,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-72.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 72,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-74.flac",
+      "seconds": 2.42,
+      "norm_db": 9.7,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 74,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-78.flac",
+      "seconds": 2.6,
+      "norm_db": 9.4,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 78,
+      "pc": 6,
+      "pcs": [
+        6
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 10,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-81.flac",
+      "seconds": 2.6,
+      "norm_db": 9.5,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 8.6,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 7.1,
+      "palette": "soft",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "soft-broad-0.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "soft",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-broad-1.flac",
+      "seconds": 6,
+      "norm_db": -1.4,
+      "palette": "soft",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-broad-2.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "soft",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-broad-3.flac",
+      "seconds": 6,
+      "norm_db": 2.6,
+      "palette": "soft",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-held-0.flac",
+      "seconds": 12,
+      "norm_db": 0.7,
+      "palette": "soft",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-held-1.flac",
+      "seconds": 12,
+      "norm_db": 0.4,
+      "palette": "soft",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-held-2.flac",
+      "seconds": 12,
+      "norm_db": 0.2,
+      "palette": "soft",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-rest-0.flac",
+      "seconds": 18,
+      "norm_db": 18.4,
+      "palette": "soft",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 19,
+      "palette": "soft",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 18.8,
+      "palette": "soft",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2
+      ],
+      "isolated": false
+    },
+    {
+      "file": "soft-rest-3.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "soft",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "print-fine-64.flac",
+      "seconds": 2.6,
+      "norm_db": 8.5,
+      "palette": "print",
+      "unit": "fine",
+      "note": 64,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-67.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "print",
+      "unit": "fine",
+      "note": 67,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-69.flac",
+      "seconds": 1.6,
+      "norm_db": 10.1,
+      "palette": "print",
+      "unit": "fine",
+      "note": 69,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-72.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "print",
+      "unit": "fine",
+      "note": 72,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-74.flac",
+      "seconds": 2.42,
+      "norm_db": 9.7,
+      "palette": "print",
+      "unit": "fine",
+      "note": 74,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "print",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 10,
+      "palette": "print",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-81.flac",
+      "seconds": 2.6,
+      "norm_db": 9.5,
+      "palette": "print",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 8.6,
+      "palette": "print",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 7.1,
+      "palette": "print",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "print-broad-0.flac",
+      "seconds": 6,
+      "norm_db": 0,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-1.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-2.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-3.flac",
+      "seconds": 6,
+      "norm_db": -0.5,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-4.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-5.flac",
+      "seconds": 6,
+      "norm_db": 0,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-broad-6.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "print",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-held-0.flac",
+      "seconds": 12,
+      "norm_db": -0.5,
+      "palette": "print",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-held-1.flac",
+      "seconds": 12,
+      "norm_db": -0.9,
+      "palette": "print",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-held-2.flac",
+      "seconds": 12,
+      "norm_db": -1,
+      "palette": "print",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-held-3.flac",
+      "seconds": 12,
+      "norm_db": 0.8,
+      "palette": "print",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "print-rest-0.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "print",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "print-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "print",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "print-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "print",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "echo-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 16.5,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 15.6,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-81.flac",
+      "seconds": 2.58,
+      "norm_db": 13.6,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-83.flac",
+      "seconds": 2.48,
+      "norm_db": 13.8,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 83,
+      "pc": 11,
+      "pcs": [
+        11
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 13.3,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-88.flac",
+      "seconds": 2.6,
+      "norm_db": 13,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 88,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-91.flac",
+      "seconds": 2.6,
+      "norm_db": 14.6,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 91,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-fine-93.flac",
+      "seconds": 2.6,
+      "norm_db": 11.9,
+      "palette": "echo",
+      "unit": "fine",
+      "note": 93,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "echo-broad-0.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-1.flac",
+      "seconds": 6,
+      "norm_db": 0.6,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-2.flac",
+      "seconds": 6,
+      "norm_db": 0.5,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-3.flac",
+      "seconds": 6,
+      "norm_db": 1,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-4.flac",
+      "seconds": 6,
+      "norm_db": 1,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-5.flac",
+      "seconds": 6,
+      "norm_db": 1,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-6.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-broad-7.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "echo",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-held-0.flac",
+      "seconds": 12,
+      "norm_db": 1.9,
+      "palette": "echo",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-held-1.flac",
+      "seconds": 12,
+      "norm_db": 2.2,
+      "palette": "echo",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-held-2.flac",
+      "seconds": 12,
+      "norm_db": 2.6,
+      "palette": "echo",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-held-3.flac",
+      "seconds": 12,
+      "norm_db": 0.8,
+      "palette": "echo",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-held-4.flac",
+      "seconds": 12,
+      "norm_db": 0.4,
+      "palette": "echo",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-rest-0.flac",
+      "seconds": 16.36,
+      "norm_db": 16.9,
+      "palette": "echo",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 18.4,
+      "palette": "echo",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 18.7,
+      "palette": "echo",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        7,
+        11
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-rest-3.flac",
+      "seconds": 18,
+      "norm_db": 18.9,
+      "palette": "echo",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "echo-rest-4.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "echo",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "hush-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 16.5,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-78.flac",
+      "seconds": 1.95,
+      "norm_db": 15,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 78,
+      "pc": 6,
+      "pcs": [
+        6
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 15.6,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-81.flac",
+      "seconds": 2.58,
+      "norm_db": 13.6,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 13.3,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-88.flac",
+      "seconds": 2.6,
+      "norm_db": 13,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 88,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-90.flac",
+      "seconds": 2.6,
+      "norm_db": 12.6,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 90,
+      "pc": 6,
+      "pcs": [
+        6
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-91.flac",
+      "seconds": 2.6,
+      "norm_db": 14.6,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 91,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-fine-93.flac",
+      "seconds": 2.6,
+      "norm_db": 11.9,
+      "palette": "hush",
+      "unit": "fine",
+      "note": 93,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "hush-broad-0.flac",
+      "seconds": 6,
+      "norm_db": -1.5,
+      "palette": "hush",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-broad-1.flac",
+      "seconds": 6,
+      "norm_db": -1.4,
+      "palette": "hush",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-broad-2.flac",
+      "seconds": 6,
+      "norm_db": -0.8,
+      "palette": "hush",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-broad-3.flac",
+      "seconds": 6,
+      "norm_db": 2.6,
+      "palette": "hush",
+      "unit": "broad",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-held-0.flac",
+      "seconds": 12,
+      "norm_db": 8.1,
+      "palette": "hush",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-held-1.flac",
+      "seconds": 12,
+      "norm_db": 8.3,
+      "palette": "hush",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        6,
+        7
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-held-2.flac",
+      "seconds": 12,
+      "norm_db": 19,
+      "palette": "hush",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-held-3.flac",
+      "seconds": 12,
+      "norm_db": 0.4,
+      "palette": "hush",
+      "unit": "held",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false
+    },
+    {
+      "file": "hush-rest-0.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "hush-rest-1.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "hush-rest-2.flac",
+      "seconds": 18,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "rest",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false
+    },
+    {
+      "file": "flow-voice-0.flac",
+      "seconds": 14,
+      "norm_db": 0,
+      "palette": "flow",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "flow-voice-1.flac",
+      "seconds": 14,
+      "norm_db": 0.1,
+      "palette": "flow",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "flow-voice-2.flac",
+      "seconds": 14,
+      "norm_db": 0,
+      "palette": "flow",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "flow-voice-3.flac",
+      "seconds": 14,
+      "norm_db": 0.3,
+      "palette": "flow",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-voice-0.flac",
+      "seconds": 14,
+      "norm_db": -0.5,
+      "palette": "fold",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-voice-1.flac",
+      "seconds": 14,
+      "norm_db": -1.3,
+      "palette": "fold",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-voice-2.flac",
+      "seconds": 14,
+      "norm_db": -0.7,
+      "palette": "fold",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-voice-3.flac",
+      "seconds": 14,
+      "norm_db": -0.9,
+      "palette": "fold",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-voice-4.flac",
+      "seconds": 14,
+      "norm_db": 2.4,
+      "palette": "fold",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-0.flac",
+      "seconds": 1.2,
+      "norm_db": -3.6,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-1.flac",
+      "seconds": 1.2,
+      "norm_db": -4.1,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-2.flac",
+      "seconds": 1.2,
+      "norm_db": -1.2,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-3.flac",
+      "seconds": 1.2,
+      "norm_db": -3.4,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-4.flac",
+      "seconds": 1.2,
+      "norm_db": -2.5,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        5,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-5.flac",
+      "seconds": 1.2,
+      "norm_db": -0.2,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-stab-6.flac",
+      "seconds": 1.2,
+      "norm_db": -1.9,
+      "palette": "fold",
+      "unit": "stab",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 1
+    },
+    {
+      "file": "soft-breath-0.flac",
+      "seconds": 14,
+      "norm_db": 18.4,
+      "palette": "soft",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "soft-breath-1.flac",
+      "seconds": 14,
+      "norm_db": 19,
+      "palette": "soft",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "soft-breath-2.flac",
+      "seconds": 14,
+      "norm_db": 18.9,
+      "palette": "soft",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-voice-0.flac",
+      "seconds": 14,
+      "norm_db": 2,
+      "palette": "print",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-voice-1.flac",
+      "seconds": 14,
+      "norm_db": 5.9,
+      "palette": "print",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-voice-2.flac",
+      "seconds": 14,
+      "norm_db": 8.9,
+      "palette": "print",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-0.flac",
+      "seconds": 1.5,
+      "norm_db": 25,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-1.flac",
+      "seconds": 1.5,
+      "norm_db": 25.6,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-2.flac",
+      "seconds": 1.5,
+      "norm_db": 26.4,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-3.flac",
+      "seconds": 1.5,
+      "norm_db": 26.3,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-4.flac",
+      "seconds": 1.5,
+      "norm_db": 27.3,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-5.flac",
+      "seconds": 1.5,
+      "norm_db": 27.4,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "print-grain-6.flac",
+      "seconds": 1.5,
+      "norm_db": 37.5,
+      "palette": "print",
+      "unit": "grain",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 1
+    },
+    {
+      "file": "echo-voice-0.flac",
+      "seconds": 14,
+      "norm_db": 1.7,
+      "palette": "echo",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "echo-voice-1.flac",
+      "seconds": 14,
+      "norm_db": 2.2,
+      "palette": "echo",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "echo-voice-2.flac",
+      "seconds": 14,
+      "norm_db": 2.2,
+      "palette": "echo",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "echo-voice-3.flac",
+      "seconds": 14,
+      "norm_db": 2.3,
+      "palette": "echo",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        4,
+        7,
+        9,
+        11
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "echo-voice-4.flac",
+      "seconds": 14,
+      "norm_db": 0,
+      "palette": "echo",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        4,
+        9
+      ],
+      "isolated": false,
+      "rank": 3
+    },
+    {
+      "file": "hush-voice-0.flac",
+      "seconds": 14,
+      "norm_db": 12,
+      "palette": "hush",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-voice-1.flac",
+      "seconds": 14,
+      "norm_db": 15.3,
+      "palette": "hush",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-voice-2.flac",
+      "seconds": 14,
+      "norm_db": 14.6,
+      "palette": "hush",
+      "unit": "voice",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        0,
+        2,
+        9
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-breath-0.flac",
+      "seconds": 14,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-breath-1.flac",
+      "seconds": 14,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-breath-2.flac",
+      "seconds": 14,
+      "norm_db": 28.2,
+      "palette": "hush",
+      "unit": "breath",
+      "note": null,
+      "pc": null,
+      "pcs": [],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-sub-0.flac",
+      "seconds": 14,
+      "norm_db": 8.1,
+      "palette": "hush",
+      "unit": "sub",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-sub-1.flac",
+      "seconds": 14,
+      "norm_db": 8.1,
+      "palette": "hush",
+      "unit": "sub",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "hush-sub-2.flac",
+      "seconds": 14,
+      "norm_db": 8.4,
+      "palette": "hush",
+      "unit": "sub",
+      "note": null,
+      "pc": null,
+      "pcs": [
+        2,
+        7
+      ],
+      "isolated": false,
+      "rank": 0
+    },
+    {
+      "file": "fold-fine-64.flac",
+      "seconds": 2.6,
+      "norm_db": 8.5,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 64,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-67.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 67,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-69.flac",
+      "seconds": 1.6,
+      "norm_db": 10.1,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 69,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-72.flac",
+      "seconds": 2.6,
+      "norm_db": 10.9,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 72,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-74.flac",
+      "seconds": 2.42,
+      "norm_db": 9.7,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 74,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-76.flac",
+      "seconds": 2.6,
+      "norm_db": 10.3,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 76,
+      "pc": 4,
+      "pcs": [
+        4
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-79.flac",
+      "seconds": 2.6,
+      "norm_db": 10,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 79,
+      "pc": 7,
+      "pcs": [
+        7
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-81.flac",
+      "seconds": 2.6,
+      "norm_db": 9.5,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 81,
+      "pc": 9,
+      "pcs": [
+        9
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-84.flac",
+      "seconds": 2.6,
+      "norm_db": 8.6,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 84,
+      "pc": 0,
+      "pcs": [
+        0
+      ],
+      "isolated": true
+    },
+    {
+      "file": "fold-fine-86.flac",
+      "seconds": 2.6,
+      "norm_db": 7.1,
+      "palette": "fold",
+      "unit": "fine",
+      "note": 86,
+      "pc": 2,
+      "pcs": [
+        2
+      ],
+      "isolated": true
+    }
+  ]
+}

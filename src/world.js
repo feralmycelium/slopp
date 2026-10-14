@@ -10,6 +10,14 @@ const V = (x=0,y=0,z=0) => new THREE.Vector3(x,y,z);
 const random=seeded;
 const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
 
+function renderWorld(renderer,scene,preview,camera) {
+  renderer.render(scene,camera);
+  if(!preview.children.length)return;
+  const autoClear=renderer.autoClear;renderer.autoClear=false;
+  try{renderer.clearDepth();renderer.render(preview,camera);}
+  finally{renderer.autoClear=autoClear;}
+}
+
 export function wheelTravel(event,world) {
   event.preventDefault();
   if(world.state.making)return false;
@@ -50,7 +58,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const state={speed:reduced.matches?0:24,paused:reduced.matches,making:false,yaw:0,pitch:0,time:0,items:[],travel:0,environment:ENVIRONMENTS[0]};
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
   const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map();
-  const preview=new THREE.Group();scene.add(preview);
+  const preview=new THREE.Scene();preview.fog=scene.fog;
   let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
 
@@ -225,8 +233,8 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   function setKey(key,down){if(down){flight=null;keys.add(key.toLowerCase());}else keys.delete(key.toLowerCase());}
   function stopKeys(){keys.clear();pinchRemaining=0;flight=null;}
   function createLoopCapture(width,height){
-    const snapshot=scene.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
-    snapshot.traverse(object=>{
+    const snapshot=scene.clone(),foreground=preview.clone(),view=camera.clone(),origin=camera.position.clone(),geometries=new Map();
+    for(const layer of [snapshot,foreground])layer.traverse(object=>{
       if(!object.geometry)return;
       if(!geometries.has(object.geometry))geometries.set(object.geometry,object.geometry.clone());
       object.geometry=geometries.get(object.geometry);
@@ -244,7 +252,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         view.updateMatrixWorld();
         const liveTime=uniforms.uTime.value,liveRipple=uniforms.uRipple.value.clone(),liveStart=uniforms.uRippleStart.value;
         uniforms.uTime.value=time+motion.time;uniforms.uRipple.value.copy(ripple);uniforms.uRippleStart.value=rippleStart;
-        try{output.render(snapshot,view);}
+        try{renderWorld(output,snapshot,foreground,view);}
         finally{uniforms.uTime.value=liveTime;uniforms.uRipple.value.copy(liveRipple);uniforms.uRippleStart.value=liveStart;}
         return output.domElement;
       },
@@ -275,7 +283,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         movement.multiplyScalar(dt).addScaledVector(direction,pinchStep);camera.position.add(movement);state.travel+=movement.length();camera.position.clampScalar(-49000,49000);
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
-      renderer.render(scene,camera);
+      renderWorld(renderer,scene,preview,camera);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
     requestAnimationFrame(frame);
@@ -284,7 +292,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   reduced.addEventListener('change',e=>{if(e.matches){state.paused=true;state.speed=0;}onMove();});
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
   return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,
-    captureCanvas(){renderer.render(scene,camera);return canvas;},
+    captureCanvas(){renderWorld(renderer,scene,preview,camera);return canvas;},
     createLoopCapture,
     turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
 }
