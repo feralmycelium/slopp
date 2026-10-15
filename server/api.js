@@ -1,5 +1,6 @@
 import { RULES, boundsOf, placementIssue } from "../public/rules.js";
 import { ENVIRONMENTS } from "../public/environments.js";
+import { collectAnalytics } from './analytics.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_PAYLOAD_BYTES = 256 * 1024;
@@ -177,6 +178,7 @@ const worldExport = async (db) => {
 
 export const handleApi = async (request, db) => {
   const url = new URL(request.url);
+  if (request.method === 'POST' && url.pathname === '/api/analytics') return collectAnalytics(request, db);
   if (request.method === "GET" && url.pathname === "/api/world") return world(url, db);
   if (request.method === "GET" && url.pathname === "/api/world/export") return worldExport(db);
   if (request.method === "POST" && url.pathname === "/api/marks") return createMark(request, db);
