@@ -38,12 +38,21 @@ try{
   const b=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:'reduce'}),other=await visit(b);
   const saved=await other.evaluate(()=>manuscript.state.items[0]);
   assert.deepEqual(saved.space,draft.space);assert.deepEqual(saved.strokes,draft.strokes);
-  await other.click('#latest');assert.deepEqual(await other.evaluate(()=>manuscript.world.camera.position.toArray()),await p.evaluate(()=>manuscript.world.camera.position.toArray()));
+  await other.click('#latest');
+  const found=await other.evaluate(id=>{
+    const {world,state}=manuscript,item=state.items.find(item=>item.id===id),space=world.placement(item);
+    const rotation=world.camera.quaternion.clone().fromArray(space.rotation),origin=world.camera.position.clone().fromArray(space.position);
+    const points=item.strokes.flatMap(stroke=>stroke.points.map(([x,y,,z=0])=>world.camera.position.clone().set(x*.03,-y*.03,z*.03).applyQuaternion(rotation).add(origin).project(world.camera).toArray()));
+    return {traces:world.stats.traces,points};
+  },saved.id);
+  assert.equal(found.traces,1,'Find immediately reveals the saved drawing for another visitor.');
+  assert(found.points.every(([x,y,z])=>Math.abs(x)<.95&&Math.abs(y)<.95&&z>-1&&z<1),'Find frames the whole saved drawing inside the viewport.');
   await other.click('#surprise');await other.waitForFunction(()=>manuscript.state.items.length===2&&!manuscript.state.saving);
   await p.bringToFront();await p.waitForFunction(()=>manuscript.state.items.length===2,null,{timeout:10000});
   await p.reload();await p.waitForFunction(()=>manuscript.ready);assert.equal(await p.evaluate(()=>manuscript.state.items.length),2);
   await p.click('#about-toggle');assert.equal(await p.locator('#about').evaluate(e=>e.open),true);await p.keyboard.press('Escape');
   assert.equal(await p.locator('#about').evaluate(e=>e.open),false);assert.equal(await p.evaluate(()=>document.activeElement.id),'about-toggle');
+  await b.close();await a.close();
   const phone=await visit(await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}));
   await phone.click('#make');await draw(phone,70,340);
   assert(await phone.locator('#leave').isEnabled(),'A small-screen drawing can be released.');
