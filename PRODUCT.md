@@ -1,10 +1,6 @@
 # slopp
 
-Open-source playground.
-Paint, breathe, draw, listen, transcend.
-Release your inner child
-
-Tagline approved on 18 October 2026. Previously called Untranslatable; existing source
+Release your inner child. Previously called Untranslatable; existing source
 URLs and stored drawing identifiers remain compatible.
 
 A shared abstract artwork to explore and build together. Draw into the air,
