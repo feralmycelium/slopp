@@ -55,6 +55,7 @@ export function createSoundController({onChange=()=>{},seed=1}={}){
     strokeMove(s){if(live())play(musician.strokeMove({...s,t:ctx.currentTime}));},
     strokeEnd(){if(live())play(musician.strokeEnd({t:ctx.currentTime}));},
     motion(speed){if(live())musician.motion({t:ctx.currentTime,speed});},
+    presence(value){musician.presence(value);},
     pinch(delta){if(live())play(musician.pinch({t:ctx.currentTime,delta}));},
     look(dx,dy){if(live())play(musician.look({t:ctx.currentTime,dx,dy}));},
     turn(){if(live())play(musician.turn({t:ctx.currentTime}));},

@@ -66,7 +66,7 @@ export function createInstrument(ctx,{destination=ctx.destination,maxVoices=8,cl
     const src=ctx.createBufferSource(),g=ctx.createGain(),ctl=ctx.createGain(),pan=ctx.createStereoPanner(),send=ctx.createGain();
     src.buffer=buffer;src.playbackRate.value=choice.rate;src.detune.value=(carry?.bend??0)+glide;pan.pan.value=Math.max(-1,Math.min(1,carry?.pan??e.pan??0));
     const offset=e.offset==='random'?Math.random()*Math.max(0,span-(e.dur??.1)-.05):Math.min(e.offset??0,span*.3);
-    const level=dB(e.gain+(choice.unit.norm_db??0)),dur=e.hold?(span-offset)/choice.rate:Math.min(e.dur??span,(span-offset)/choice.rate);
+    const level=dB(e.gain+(choice.unit.norm_db??0)-(choice.unit.source==='meridian-bells'?6:0)),dur=e.hold?(span-offset)/choice.rate:Math.min(e.dur??span,(span-offset)/choice.rate);
     const attack=carry?.8:Math.max(stemMix?.014:.002,e.attack||.005);
     g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(level,at+attack);
     const releaseAt=e.hold?at+dur:at+Math.max(e.attack||0,dur-(e.release||1)*.3);

@@ -43,8 +43,9 @@ const parseMark = (value) => {
     if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff || !Array.isArray(points) || points.length < 2 || points.length > RULES.maxStrokePoints) return null;
     const parsedPoints = [];
     for (const point of points) {
-      if (!Array.isArray(point) || point.length !== 3 || !validNumber(point[0], MAX_POINT_OFFSET) || !validNumber(point[1], MAX_POINT_OFFSET) || !validNumber(point[2], 1) || point[2] < 0) return null;
-      parsedPoints.push([point[0], point[1], point[2]]);
+      if (!Array.isArray(point) || ![3,4].includes(point.length) || !validNumber(point[0], MAX_POINT_OFFSET) || !validNumber(point[1], MAX_POINT_OFFSET) || !validNumber(point[2], 1) || point[2] < 0) return null;
+      if(point.length===4&&(!value.space||!validNumber(point[3],MAX_POINT_OFFSET)))return null;
+      parsedPoints.push([...point]);
     }
     pointCount += parsedPoints.length;
     if (pointCount > RULES.maxPoints) return null;

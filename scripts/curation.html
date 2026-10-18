@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>slopp — choose what comes forward</title>
+<style>
+:root{color-scheme:light;font-family:Arial,sans-serif;color:#282429;background:#f0e8d9}*{box-sizing:border-box}body{margin:0;padding:40px 5vw 80px}header{max-width:760px;margin-bottom:32px}h1{font:normal clamp(32px,5vw,58px)/1.06 Georgia,serif;margin:10px 0 20px}p{line-height:1.5;max-width:66ch}small,.note{color:#665f59}a{color:inherit}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:24px 0}button,select{font:inherit;min-height:44px;border:1px solid #aba295;border-radius:24px;background:transparent;color:inherit;padding:10px 17px;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #2b4587;outline-offset:3px}button[aria-pressed=true]{background:#282429;color:#f0e8d9;border-color:#282429}button:disabled{opacity:.5;cursor:wait}#status{min-height:24px}#drawings{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:36px 28px}article{min-width:0;border-top:1px solid #c4baab;padding-top:15px}canvas{display:block;width:100%;height:230px;margin-bottom:14px}.choices{display:flex;gap:6px;flex-wrap:wrap}.choices button{font-size:13px;padding:10px 13px}h2{font:normal 20px Georgia,serif;margin:8px 0}article p{font-size:13px;min-height:36px;margin:7px 0 14px}.weight{font-size:12px;letter-spacing:.03em}footer{margin-top:40px;font-size:13px}@media(max-width:500px){body{padding:24px 20px 50px}canvas{height:250px}}
+</style></head><body>
+<header><small>slopp · your collection</small><h1>Choose what<br>comes forward.</h1><p>Automatic picks give clear gestures, balanced compositions and quieter palettes a better chance. Simple drawings can rank highly too. This is a starting point for your taste, not a judgement of beauty.</p><p class="note">Feature a favourite or show a piece less often. Every drawing stays in the world. Your choices save here and apply to the local preview; they go public with the next release.</p></header>
+<div class="controls"><label for="environment">Place</label><select id="environment"><option value="all">All places</option></select><button id="undo" disabled>Undo last choice</button><a href="http://127.0.0.1:9742/" target="_blank" rel="noopener">Open world ↗</a></div>
+<p id="status" role="status">Loading drawings…</p><button id="retry" hidden>Retry loading</button><main id="drawings"></main><footer>No drawing is deleted or hidden by these choices.</footer>
+<script type="module">
+const $=id=>document.getElementById(id);let items=[],overrides={},history=[],busy=false;
+let assessDrawing,drawingWeights,INKS,environmentById;
+function paint(canvas,item){
+  const ctx=canvas.getContext('2d'),points=item.strokes.flatMap(s=>s.points);canvas.width=660;canvas.height=460;
+  if(!points.length)return;
+  let left=Infinity,right=-Infinity,top=Infinity,bottom=-Infinity;for(const [x,y]of points){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+  const scale=Math.min(580/Math.max(80,right-left),380/Math.max(80,bottom-top));
+  ctx.translate(330,230);ctx.scale(scale,scale);ctx.translate(-(left+right)/2,-(top+bottom)/2);ctx.lineCap='round';ctx.lineJoin='round';
+  for(const stroke of item.strokes){ctx.beginPath();stroke.points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=ctx.fillStyle=INKS[stroke.ink]||INKS.ink;ctx.lineWidth=(stroke.kind==='ribbon'?5:1.7)/scale;if(stroke.kind==='form'){ctx.closePath();ctx.fill();}else ctx.stroke();}
+}
+function render(){
+  const weights=drawingWeights(items,overrides),selected=$('environment').value,list=items.filter(item=>selected==='all'||environmentById(item.space?.environment).id===selected).sort((a,b)=>weights.get(b.id)-weights.get(a.id)||a.id.localeCompare(b.id));
+  $('drawings').replaceChildren();
+  list.forEach(item=>{
+    const article=document.createElement('article');article.dataset.id=item.id;
+    const canvas=document.createElement('canvas');canvas.role='img';canvas.setAttribute('aria-label','Drawing preview');paint(canvas,item);
+    const heading=document.createElement('h2');heading.textContent=environmentById(item.space?.environment).name;
+    const weight=document.createElement('span');weight.className='weight';weight.textContent=weights.get(item.id).toFixed(1)+'× selection weight';
+    const reason=document.createElement('p');reason.textContent=overrides[item.id]==='feature'?'Your featured pick':overrides[item.id]==='less'?'You chose to show this less often':assessDrawing(item).reasons.join(' · ');
+    const choices=document.createElement('div');choices.className='choices';
+    for(const [choice,label]of [['feature','Feature'],['automatic','Automatic'],['less','Less often']]){const button=document.createElement('button');button.textContent=label;button.dataset.choice=choice;button.setAttribute('aria-pressed',String((overrides[item.id]||'automatic')===choice));button.disabled=busy;button.onclick=()=>save(item.id,choice);choices.append(button);}
+    article.append(canvas,heading,weight,reason,choices);$('drawings').append(article);
+  });
+  $('undo').disabled=busy||!history.length;
+}
+async function save(id,choice,undo=false){
+  if(busy)return;busy=true;render();$('status').textContent='Saving…';
+  try{
+    const previous=overrides[id]||'automatic',response=await fetch('/api/curation',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,choice})});
+    if(!response.ok)throw new Error(await response.text());overrides=(await response.json()).overrides;
+    if(undo)history.pop();else history.push({id,choice:previous});
+    $('status').textContent=undo?'Last choice undone.':'Saved. Your preview will pick up this choice within five seconds.';
+  }catch(error){$('status').textContent=error.message;}
+  finally{busy=false;render();const card=[...$('drawings').children].find(card=>card.dataset.id===id);card?.querySelector('[data-choice="'+choice+'"]')?.focus({preventScroll:true});}
+}
+$('environment').onchange=()=>{if(drawingWeights)render();};$('undo').onclick=()=>{const last=history.at(-1);if(last)save(last.id,last.choice,true);};
+async function load(){
+  $('retry').hidden=true;$('environment').disabled=true;$('status').textContent='Loading drawings…';
+  const controller=new AbortController(),attempt=Date.now();let timer;
+  try{
+    const [quality,environments,data]=await Promise.race([
+      Promise.all([import('/quality.js?load='+attempt),import('/environments.js?load='+attempt),
+        fetch('/api/curation',{signal:controller.signal,cache:'no-store'}).then(async response=>{if(!response.ok)throw new Error('Drawings unavailable');return response.json();})]),
+      new Promise((resolve,reject)=>{timer=setTimeout(()=>{reject(new Error('Loading took too long'));controller.abort();},10000);})
+    ]);
+    ({assessDrawing,drawingWeights}=quality);({INKS,environmentById}=environments);items=data.items;overrides=data.overrides;
+    for(const env of environments.ENVIRONMENTS){const option=document.createElement('option');option.value=env.id;option.textContent=env.name;$('environment').append(option);}
+    render();$('status').textContent=items.length+' drawings. Higher weight means a better chance, never a guaranteed pick.';$('environment').disabled=false;
+  }catch(error){$('status').textContent='Drawings did not load: '+error.message+'. Check that the local preview is running, then retry.';$('retry').hidden=false;}
+  finally{clearTimeout(timer);}
+}
+$('retry').onclick=load;load();
+</script></body></html>

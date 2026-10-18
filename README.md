@@ -35,10 +35,22 @@ and up. Arrow keys look around. Pinch a trackpad to travel through depth.
 The drift slider separately controls automatic travel. Space pauses when the
 canvas has focus. “Elsewhere” visits the next environment.
 
+Leave the world drifting to watch it without input. After five seconds facing
+empty space, an artwork begins appearing in the distance. The opening uses
+the original art; community drawings join after thirty seconds. These local
+appearances stay in place and do not create new shared drawings.
+
 “Draw something” starts a drawing at the current location or resumes a saved
 draft. Choose a local colour and one of three tools. Undo removes a stroke.
-“Let it go” publishes the drawing and unfolds it into depth. Close or Escape
-keeps a draft for later. Empty drafts are discarded on close.
+Drawing begins at a gentle pace, keeping Pause and any slower speed. The
+drawing pace slider lets you speed up again. Drift and movement keys keep
+working while you draw. Hold or drag the pen to
+leave a trail, or choose “Pause drift” to draw in one place. “Start drifting”
+resumes movement, including after a reduced-motion start.
+“Let it go” publishes the drawing, preserving a travelling trail's depth, and
+restores the speed and pause setting from before drawing. Close or Escape
+keeps a private draft for later. Only Let it go shares the drawing.
+Empty drafts are discarded on close.
 
 The round surprise button chooses a colour block, fine line, ribbon, cut-out,
 scattered marks or another abstract gesture. It draws itself into the space.
@@ -49,6 +61,8 @@ writes keep the draft. Reduced motion starts still and skips automatic release
 animations. The About dialog contains the original artworks, source download
 and drawing export. Tap the speaker for the optional soundtrack; tap again to
 mute. Six related musical palettes respond to movement, drawing and nearby art.
+Sparse views make the music quieter; a soft layer continues until sound is
+muted or the tab is hidden.
 
 ## Extend the work
 
@@ -66,7 +80,10 @@ as the project develops. The current preview plan is in
 `GET /api/world` reads cursor-paginated contributions. `POST /api/marks`
 publishes an idempotent contribution. `GET /api/world/export` exports JSON.
 A spatial drawing includes `space.position`, `space.rotation` and optionally
-`space.environment`. Existing paper records remain renderable. The API has
+`space.environment`. Points are `[x, y, pressure]`, with an optional fourth
+value for recorded depth in the same drawing units as x/y (0.03 world units).
+Depth requires spatial metadata and is bounded to ±3,000, like x/y offsets.
+Existing paper records remain renderable. The API has
 no visitor edit or delete operation.
 
 ## Checks

@@ -1,4 +1,4 @@
-import {signatureForCanvas,paintSignature,downloadBlob} from './still.js';
+import {drawSignature,downloadBlob} from './still.js';
 
 export async function downloadAnimation(world,{signal,onProgress=()=>{}}={}){
   const {encodeLoop}=await import('./video-encoder.js');
@@ -13,11 +13,9 @@ export async function downloadAnimation(world,{signal,onProgress=()=>{}}={}){
   const hidden=()=>{if(document.hidden)controller.abort(new Error('Keep this tab open while saving an animation. Try again.'));};
   signal?.addEventListener('abort',abort,{once:true});document.addEventListener('visibilitychange',hidden);
   try{
-    ctx.drawImage(loop.render(0),0,0);
-    const signature=signatureForCanvas(ctx,canvas.width,canvas.height);
     const draw=seconds=>{
       ctx.drawImage(loop.render(seconds),0,0);
-      paintSignature(ctx,signature,loop.moving?seconds:null);
+      drawSignature(ctx,canvas.width,canvas.height);
     };
     draw(0);onProgress(0);
     const blob=await encodeLoop(canvas,draw,{signal:controller.signal,onProgress});

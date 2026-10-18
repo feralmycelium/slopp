@@ -5,13 +5,13 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function rng(seed){let a=seed>>>0;return()=>{a=a+0x6d2b79f5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
 const hash=s=>[...String(s)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
 
-export const RULES={restAfter:4,restLevel:-27,spanMin:20,spanMax:60,onsetWindow:10,onsetSoftLimit:6,fatigueAfter:20,maxAttenuation:9,
+export const RULES={restAfter:4,restLevel:-27,spanMin:10,spanMax:16,onsetWindow:10,onsetSoftLimit:6,fatigueAfter:20,maxAttenuation:9,
   articulationGap:1/3,blendTauSlow:10,blendTauFast:2.5,pivotLow:.42,salienceEnter:.04,salienceExit:.025,detailGap:6,breathGap:4,travelGap:25,hearGap:6,hearAfterStroke:1.5};
 
 export function createMusician({seed=1}={}){
   const random=rng(seed),walk={},onsets=[];
   let lastInput=-Infinity,activeSince=null,lastStep=null,speed=0,weight=0,primary='flow',neighbour='fold',rawBlend=0;
-  let stroke=null,restNext=2,lastTravel=-Infinity;
+  let stroke=null,restNext=2,lastTravel=-Infinity,presence=1;
   let sal=0,salOn=false,salId=null,salT=null,lastDetail=-Infinity,space=0,glide=0,pinchRate=0,lastPinch=null,lastBreath=-Infinity;
   let lookRate=0,lookT=null,lastTurn=-Infinity,stir=0;
   let lastAnswer=-Infinity,lastStrokeEnd=-Infinity,lastHeard=-Infinity;
@@ -81,6 +81,7 @@ export function createMusician({seed=1}={}){
     },
     strokeEnd({t}){if(!stroke)return[];touch(t);const ev=stroke.end({t});stroke=null;lastStrokeEnd=t;return ev;},
     motion({t,speed:s}){speed=clamp(s,0,1);},
+    presence(value){presence=clamp(value,0,1);},
     look({t,dx,dy}){
       const d=Math.hypot(dx,dy)/600;
       if(lookT!==null&&t>lookT)lookRate+=(d/(t-lookT)-lookRate)*.3;lookT=t;
@@ -119,7 +120,7 @@ export function createMusician({seed=1}={}){
       const restingFor=t-lastInput;
       return {space:Math.tanh(space),glideCents:clamp(glide,-40,40),weight,primary,neighbour,stir,blendTau:RULES.blendTauSlow+(RULES.blendTauFast-RULES.blendTauSlow)*speed,
         colourOk:primary===neighbour?{[primary]:true}:{[primary]:allowColour(primary),[neighbour]:allowColour(neighbour)},
-        restDuck:restingFor<RULES.restAfter?-6:0,salience:salOn?Math.min(1,sal/.1):0,attenuation:attenuation(t)};
+        restDuck:(restingFor<RULES.restAfter?-6:0)-(1-presence)*6,salience:salOn?Math.min(1,sal/.1):0,attenuation:attenuation(t)};
     },
     tick({t,environment}){
       const dt=lastStep===null?1/30:clamp(t-lastStep,1e-3,1);lastStep=t;
@@ -132,10 +133,10 @@ export function createMusician({seed=1}={}){
       const out=[];
       if(t>=restNext){
         const id=palette(),mix=PALETTES[id].restMix,roll=random(),n=paletteNotes(id),len=RULES.spanMin+random()*(RULES.spanMax-RULES.spanMin);
-        const kind=roll<mix.hum?'hum':roll<mix.hum+mix.held?'held':'none';
-        if(kind==='hum')out.push(voice({t,palette:id,unit:'rest',note:n.rest[0],gain:RULES.restLevel-random()*4,attack:6,release:8,dur:len*.7,role:'rest',send:.5,filterCycle:30}));
-        if(kind==='held')out.push(voice({t,palette:id,unit:'held',note:n.held[Math.floor(random()*2)],gain:RULES.restLevel+2-random()*4,attack:5,release:8,dur:len*.6,role:'rest',send:.7,filterCycle:20+random()*20}));
-        restNext=t+len;
+        const kind=roll<mix.hum/(mix.hum+mix.held)?'hum':'held';
+        if(kind==='hum')out.push(voice({t,palette:id,unit:'rest',note:n.rest[0],gain:RULES.restLevel-random()*4,attack:3,release:6,dur:len,role:'rest',send:.5,filterCycle:30}));
+        if(kind==='held')out.push(voice({t,palette:id,unit:'held',note:n.held[Math.floor(random()*2)],gain:RULES.restLevel+2-random()*4,attack:3,release:6,dur:12,role:'rest',send:.7,filterCycle:20+random()*20}));
+        restNext=t+len*.6;
       }
       if(salOn&&t-lastDetail>RULES.detailGap&&t-lastInput>1.5){
         lastDetail=t;const id=palette(),r=rng(hash(salId)),fine=paletteNotes(id).fine,boost=Math.min(3,3*sal/.1);

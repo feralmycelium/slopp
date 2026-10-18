@@ -52,7 +52,7 @@ test('broad strokes start softly at once and bloom into a chord',()=>{
   for(const e of bloom)expect(pcs('flow').has(e.note%12)).toBe(true);
 });
 
-test('rest is genuinely quiet: varied sparse elements with real gaps and nothing loud',()=>{
+test('unattended listening stays quiet and varied without long silent gaps',()=>{
   const m=createMusician({seed:9});
   const ev=run(m,0,600,.25);
   const rest=ev.filter(e=>e.role==='rest');
@@ -61,7 +61,14 @@ test('rest is genuinely quiet: varied sparse elements with real gaps and nothing
   expect(new Set(rest.map(e=>e.unit)).size).toBeGreaterThanOrEqual(2);
   expect(touches(ev)).toHaveLength(0);
   const busy=[];for(let t=0;t<600;t+=1)busy.push(rest.some(e=>e.t<=t&&e.t+e.dur>t));
-  expect(busy.filter(b=>!b).length).toBeGreaterThan(60);
+  expect(busy.slice(5).every(Boolean)).toBe(true);
+});
+
+test('an empty view lowers the continuing bed without muting it',()=>{
+  const m=createMusician();m.presence(1);const full=m.mix(10).restDuck;
+  m.presence(0);const empty=m.mix(10).restDuck;
+  expect(empty).toBeLessThan(full);expect(empty).toBeGreaterThanOrEqual(-12);
+  expect(run(m,0,60).some(e=>e.role==='rest')).toBe(true);
 });
 
 test('travelling alone does not wake the music up',()=>{

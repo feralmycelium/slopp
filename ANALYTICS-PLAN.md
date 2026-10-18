@@ -6,7 +6,7 @@ Lead: GPT-6. Native Fable 5.1 design consultation; independent code review befor
 1. [x] Inspect live storage, source and supported Sites deployment route.
 2. [x] Add first-party measurement and report with failing behavioural tests first.
 3. [x] Independent review; real browser verification using isolated test records.
-4. [ ] Publish, read back live records, mirror scoped changes into the primary checkout.
+4. [x] Publish, read back live records, mirror scoped changes into the primary checkout.
 
 Use the current published source (74e1238) in this isolated checkout. Primary has
 unpublished UX changes; do not ship or overwrite them. No changes to art or sound.
@@ -42,6 +42,19 @@ Blocked storage falls back to page-local measurement, labelled non-persistent.
 - Independent Sol 5.6 review found damaged-ID handling and unstable attribution;
   both have regression coverage and fixes. Final bounded re-review approved;
   15 focused tests and the 49-test project suite pass. Build passes.
+
+## Publication
+
+Sites version 14, commit 6ae473831e5b36373d93cbc8f95b6ef6bf820e5b,
+deployment appgdep_6ad15985eba881918e0c558440b07a70 succeeded at
+2026-10-15T22:54:17Z. GitHub codex/shared-manuscript also pushed to that SHA.
+Live D1 table and Chrome test heartbeat verified; test active_ms reached 60179.
+The complete captured export in .evidence/analytics-live-readback.json produced
+an owner report excluding the marked test page. Unmarked launch traffic may
+include hosting previews; it is not verified human traffic. No public drawings
+were written by QA. Live browser console had no errors. QA tabs closed.
+Scoped changes are mirrored in the primary checkout alongside unpublished UX
+changes. Its package test list preserves the independent space tests.
 
 Acceptance: duplicate/out-of-order heartbeats, reloads, inactivity rotation,
 hidden/idle time, blocked storage, malformed requests, report definitions, and

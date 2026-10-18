@@ -90,6 +90,18 @@ test('spatial freehand contributions keep their position and orientation for ano
   expect((await api('/api/world')).body.items[0].space).toEqual(item.space);
 });
 
+test('travelling strokes retain depth and pressure for another visitor',async()=>{
+  const item=mark('cf8fad5b-d9cb-469f-a165-70867728950e',0,0);
+  item.space={position:[0,0,-1],rotation:[0,0,0,1],environment:'flow'};
+  item.strokes[0].points=[[0,0,.25,0],[30,-12,.75,-800]];
+  expect((await api('/api/marks',{method:'POST',body:JSON.stringify(item)})).response.status).toBe(201);
+  expect((await api('/api/world')).body.items[0].strokes).toEqual(item.strokes);
+  for(const depth of [3001,'12',null]){
+    const invalid=structuredClone(item);invalid.id=crypto.randomUUID();invalid.strokes[0].points[1][3]=depth;
+    expect((await api('/api/marks',{method:'POST',body:JSON.stringify(invalid)})).response.status).toBe(400);
+  }
+});
+
 test('a drawing keeps its local environment and ink after another visitor reads it',async()=>{
   const item=mark('bf8fad5b-d9cb-469f-a165-70867728950e',0,0);
   item.space={position:[-44,-7,-60],rotation:[0,0,0,1],environment:'soft'};

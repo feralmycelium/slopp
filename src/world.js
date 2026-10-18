@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import {loopMotion} from '../public/loop.js';
+import {createPresenceProbe} from './presence.js';
 
 import {INKS,ENVIRONMENTS,environmentAt,environmentById,seeded,hash,traceDepth} from '../public/environments.js';
 import {landscape} from './art.js';
+import {layoutTraces,sourceSpace,traceFrame,fitDistance,chooseTrace} from '../public/space.js';
 export const PALETTE=INKS;
 const PAPER = '#f0e8d9';
 const TAU = Math.PI * 2;
@@ -59,7 +61,11 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   const uniforms={uTime:{value:0},uRipple:{value:V(9999,9999,9999)},uRippleStart:{value:-100}};
   const materials=new Map(),regions=new Map(),traces=new Map(),keys=new Set(),unfoldings=new Map(),ghosts=new Map();
   const preview=new THREE.Scene();preview.fog=scene.fog;
-  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null;
+  let draft=null,last=performance.now(),lastRegion='',lastSync=0,displayCounter=0,pinchRemaining=0,flight=null,focusId=null,activeSeconds=0;
+  let layout=new Map(),curation={},nextIntroduction=30;
+  const frames=new Map(),introduced=new Map(),localPlacements=new Map(),encounters=new Map();
+  const probePresence=createPresenceProbe();
+  let emptySince=null,lastPresence=-Infinity,encounterSequence=0,presence=0,audibleTraces=[];
   const direction=V(),right=V(),movement=V(),euler=new THREE.Euler(0,0,0,'YXZ');
 
   function material(color,thin=false,opacity=1,animated=true,motion='flow') {
@@ -72,6 +78,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     if(animated)mat.onBeforeCompile=shader=>{
       Object.assign(shader.uniforms,uniforms);
       shader.vertexShader='uniform float uTime; uniform vec3 uRipple; uniform float uRippleStart;\n'+shader.vertexShader;
+      shader.vertexShader=shader.vertexShader.replace('#include <fog_vertex>','#ifdef USE_FOG\nvFogDepth = length(mvPosition.xyz);\n#endif');
       shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
         vec3 worldPoint = (modelMatrix * vec4(position, 1.0)).xyz;
         float age = uTime - uRippleStart;
@@ -92,39 +99,45 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     const obj=thin?new THREE.Line(geometry,material(color,true,opacity,true,motion)):new THREE.Mesh(geometry,material(color,false,1,true,motion));
     group.add(obj);return obj;
   }
-  function dispose(group) {group.traverse(obj=>obj.geometry?.dispose());group.removeFromParent();}
+  function dispose(group) {group.traverse(obj=>{obj.geometry?.dispose();if(obj.userData.traceMaterial)obj.material.dispose();});group.removeFromParent();}
 
   function regionsAround() {
-    const cell=camera.position.clone().divideScalar(48).round(),key=cell.toArray().join(',');
+    const cell=camera.position.clone().divideScalar(48).round(),key=cell.toArray().join(',')+'/'+scene.fog.far;
     if(key===lastRegion)return;lastRegion=key;
     const wanted=new Set(),landmarks=ENVIRONMENTS.map(env=>({
       env,center:V(...env.center.map((n,i)=>n+Math.round((camera.position.getComponent(i)-n)/240)*240))
     }));
     function add(k,center,seed,env,borrowed,scale=1){
+      if(center.distanceTo(camera.position)>scene.fog.far+80)return;
       wanted.add(k);if(regions.has(k))return;
       const group=landscape(env,seed,{line,material},borrowed);
       group.position.copy(center);group.scale.setScalar(scale);group.userData.environment=env.id;
       if(!k.startsWith('landmark/')){const rand=random(seed);group.rotation.set((rand()-.5)*.8,(rand()-.5)*1.4,(rand()-.5)*1.5);group.scale.y*=.7+rand()*.6;}
       scene.add(group);regions.set(k,group);
     }
-    for(const {env,center}of landmarks)if(camera.position.distanceTo(center)<157)
-      add('landmark/'+env.id+'/'+center.toArray().join(','),center,hash(env.id),env,null);
-    for(let x=-2;x<=2;x++)for(let y=-2;y<=2;y++)for(let z=-2;z<=2;z++) {
-      if(x*x+y*y+z*z>5)continue;
+    const repeats=Math.ceil((scene.fog.far+80)/240);
+    for(const {env,center}of landmarks)for(let x=-repeats;x<=repeats;x++)for(let y=-repeats;y<=repeats;y++)for(let z=-repeats;z<=repeats;z++){
+      const position=center.clone().add(V(x*240,y*240,z*240));
+      add('landmark/'+env.id+'/'+position.toArray().join(','),position,hash(env.id),env,null);
+    }
+    const reach=Math.ceil((scene.fog.far+80)/48);
+    for(let x=-reach;x<=reach;x++)for(let y=-reach;y<=reach;y++)for(let z=-reach;z<=reach;z++) {
       const cx=cell.x+x,cy=cell.y+y,cz=cell.z+z,k=[cx,cy,cz].join(','),seed=hash(k),rand=random(seed);
-      if(rand()<.48)continue;
+      if(rand()<.925)continue;
       const center=V(cx*48+(rand()-.5)*15,cy*48+(rand()-.5)*15,cz*48+(rand()-.5)*15);
-      if(landmarks.some(l=>l.center.distanceTo(center)<33))continue;
       const env=environmentAt(center.toArray());
-      add(k,center,seed,env.primary,env.blend>.35?env.neighbour:null,.65+rand()*.24);
+      if(center.distanceTo(V(0,0,22))<100||center.distanceTo(V(...env.center))<45)continue;
+      add(k,center,seed,env.primary,env.blend>.35?env.neighbour:null,.35+rand()*.15);
     }
     for(const [key,group]of regions)if(!wanted.has(key)){dispose(group);regions.delete(key);}
   }
 
   function placement(item) {
-    if(item.space)return item.space;
-    const seed=hash(item.id),rand=random(seed);
-    return {position:[item.x*.035,(rand()-.5)*24,item.y*.035-28],rotation:[0,0,0,1]};
+    return localPlacements.get(item.id)||layout.get(item.id)||sourceSpace(item);
+  }
+  function centerOf(item){
+    const space=placement(item),frame=frames.get(item.id)||traceFrame(item);
+    return V(...frame.center).applyQuaternion(new THREE.Quaternion().fromArray(space.rotation)).add(V(...space.position));
   }
   function paintTrace(item,flat=false,lineWidth=null) {
     const group=new THREE.Group(),space=placement(item),env=environmentById(space.environment);
@@ -132,13 +145,20 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     item.strokes.forEach((stroke,strokeIndex)=>{
       if(stroke.points.length<2)return;
       const color=PALETTE[stroke.ink]||PALETTE.ink,first=group.children.length;
-      let points=stroke.points.map((p,i)=>V(p[0]*.03,-p[1]*.03,flat?0:traceDepth(i/(stroke.points.length-1),stroke.seed,env.id)));
+      const spatial=stroke.points.some(p=>Math.abs(p[3]??0)>.001);
+      if(spatial)group.userData.spatial=true;
+      let points=stroke.points.map((p,i)=>V(p[0]*.03,-p[1]*.03,spatial?(p[3]??0)*.03:flat?0:traceDepth(i/(stroke.points.length-1),stroke.seed,env.id)));
       if(points.length>2)points=new THREE.CatmullRomCurve3(points).getPoints(Math.min(350,Math.max(24,points.length*2)));
       if(stroke.kind==='form') {
         const shape=new THREE.Shape(points.map(p=>new THREE.Vector2(p.x,p.y))),geometry=new THREE.ShapeGeometry(shape);
         const positions=geometry.getAttribute('position');geometry.computeBoundingBox();
         const {min,max}=geometry.boundingBox,span=Math.max(.001,max.x-min.x);
-        if(!flat)for(let i=0;i<positions.count;i++)positions.setZ(i,traceDepth((positions.getX(i)-min.x)/span,stroke.seed,env.id));
+        if(spatial)for(let i=0;i<positions.count;i++){
+          const x=positions.getX(i),y=positions.getY(i);
+          const nearest=points.reduce((best,p)=>(p.x-x)**2+(p.y-y)**2<(best.x-x)**2+(best.y-y)**2?p:best);
+          positions.setZ(i,nearest.z);
+        }
+        else if(!flat)for(let i=0;i<positions.count;i++)positions.setZ(i,traceDepth((positions.getX(i)-min.x)/span,stroke.seed,env.id));
         geometry.computeBoundingSphere();
         const mesh=new THREE.Mesh(geometry,material(color,false,1,!flat,env.id));mesh.userData.fill=true;group.add(mesh);
       }else{
@@ -162,7 +182,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     if(!group)return;
     if(reduced.matches||state.paused)return;
     unfoldings.set(id,{group,age:0,draw});
-    group.scale.z=.015;
+    group.scale.z=group.userData.spatial?1:.015;
     for(const child of group.children){
       child.scale.y=(draw&&child.userData.fill) ? .001 : 1;
       child.geometry.setDrawRange(0,draw&&!child.userData.fill?0:Infinity);
@@ -171,7 +191,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
   function animateReleases(dt){
     for(const [id,entry]of unfoldings){
       entry.age+=dt;const depth=clamp((entry.age-.25)/2.5,0,1);
-      entry.group.scale.z=.015+.985*(1-(1-depth)**3);
+      entry.group.scale.z=entry.group.userData.spatial?1:.015+.985*(1-(1-depth)**3);
       for(const child of entry.group.children){
         if(!entry.draw)continue;
         const progress=clamp((entry.age-child.userData.order*.9)/1.6,0,1);
@@ -223,23 +243,97 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     try{return fn();}finally{for(const {group}of ghosts.values())group.visible=true;}
   }
   function syncTraces() {
-    const nearby=state.items.map(item=>({item,d:camera.position.distanceToSquared(V(...placement(item).position))})).filter(v=>v.d<145**2).sort((a,b)=>a.d-b.d).slice(0,220);
-    const wanted=new Set(nearby.map(v=>v.item.id));
-    for(const {item}of nearby)if(!traces.has(item.id)){const group=paintTrace(item);scene.add(group);traces.set(item.id,group);if(Date.now()-Date.parse(item.createdAt)<3500)unfold(item,true);}
+    if(activeSeconds>=nextIntroduction){
+      const candidates=state.items.filter(item=>!introduced.has(item.id)&&camera.position.distanceTo(centerOf(item))<scene.fog.far);
+      const item=chooseTrace(candidates,null,Math.random,curation);
+      if(item)introduced.set(item.id,activeSeconds);
+      nextIntroduction=activeSeconds+8;
+    }
+    const wanted=new Set();
+    for(const item of state.items){
+      if(!introduced.has(item.id))continue;
+      const radius=(frames.get(item.id)||traceFrame(item)).radius;
+      if(item.id!==focusId&&camera.position.distanceTo(centerOf(item))>scene.fog.far+radius+(traces.has(item.id)?60:30))continue;
+      wanted.add(item.id);
+      if(traces.has(item.id))continue;
+      const group=paintTrace(item);
+      group.traverse(child=>{
+        if(!child.material)return;
+        const source=child.material;child.material=source.clone();child.material.onBeforeCompile=source.onBeforeCompile;child.material.customProgramCacheKey=source.customProgramCacheKey;
+        child.userData.traceMaterial={opacity:source.opacity,transparent:source.transparent};
+      });
+      scene.add(group);traces.set(item.id,group);if(Date.now()-Date.parse(item.createdAt)<3500)unfold(item,true);
+    }
     for(const [id,group]of traces)if(!wanted.has(id)){dispose(group);traces.delete(id);unfoldings.delete(id);}
+    revealTraces();
   }
-  function resize() {renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+  function revealTraces(){
+    for(const [id,group]of traces){
+      const progress=clamp((activeSeconds-introduced.get(id))/8,0,1),fade=reduced.matches?1:progress*progress*(3-2*progress);
+      group.traverse(child=>{
+      const source=child.userData.traceMaterial;if(!source)return;
+      const opacity=id===focusId?1:fade,transparent=source.transparent||opacity<1;
+      if(child.material.transparent!==transparent){child.material.transparent=transparent;child.material.needsUpdate=true;}
+      child.material.opacity=source.opacity*opacity;
+      });
+    }
+  }
+  function updateEncounters(){
+    for(const [id,entry]of encounters){
+      if(entry.center.distanceTo(camera.position)>scene.fog.far+80){dispose(entry.group);encounters.delete(id);continue;}
+      const fade=reduced.matches?1:THREE.MathUtils.smoothstep(activeSeconds-entry.born,0,4);
+      entry.group.traverse(child=>{const source=child.userData.traceMaterial;if(source)child.material.opacity=source.opacity*fade;});
+    }
+    if(activeSeconds-lastPresence<.25)return;lastPresence=activeSeconds;
+    const view=probePresence([...regions.values(),...traces.values(),...[...encounters.values()].map(e=>e.group)],camera,scene.fog);
+    presence=view.presence;
+    audibleTraces=[];
+    for(const item of state.items)if(view.visibleGroups.has(traces.get(item.id)))audibleTraces.push({item,center:centerOf(item),scale:1});
+    for(const entry of encounters.values())if(entry.item&&view.visibleGroups.has(entry.group))audibleTraces.push({item:entry.item,center:entry.center,scale:entry.group.scale.x});
+    if(view.occupied||state.making||keys.size||flight||Math.abs(pinchRemaining)>.01){emptySince=null;return;}
+    emptySince??=activeSeconds;
+    if(activeSeconds-emptySince<5)return;
+    if(encounters.size>=12){
+      const oldest=[...encounters].find(([,entry])=>!view.visibleGroups.has(entry.group));
+      if(!oldest)return;
+      dispose(oldest[1].group);encounters.delete(oldest[0]);
+    }
+    const number=encounterSequence++,env=environmentAt(camera.position.toArray()).primary;
+    const recent=new Set([...encounters.values()].map(e=>e.sourceId));
+    const item=activeSeconds>=30&&number%2?chooseTrace(state.items.filter(i=>!recent.has(i.id)),null,Math.random,curation):null;
+    const center=V(.9*Math.sin(number*2.4),.6*Math.cos(number*1.7),-90).applyQuaternion(camera.quaternion).add(camera.position);
+    const id='encounter/'+number;
+    const group=item?paintTrace({...item,id,space:{...sourceSpace(item),position:center.toArray(),rotation:camera.quaternion.toArray()}}):landscape(env,hash(id+'/'+center.toArray().join(',')),{line,material});
+    group.quaternion.copy(camera.quaternion);group.position.copy(center);
+    if(item){
+      const frame=frames.get(item.id)||traceFrame(item),scale=Math.min(1,14/frame.radius);group.scale.setScalar(scale);
+      group.position.sub(V(...frame.center).multiplyScalar(scale).applyQuaternion(group.quaternion));
+    }else{group.scale.setScalar(.65);group.userData.environment=env.id;}
+    group.userData.encounter={sourceId:item?.id??null};
+    group.traverse(child=>{
+      if(!child.material)return;const source=child.material;
+      child.material=source.clone();child.material.onBeforeCompile=source.onBeforeCompile;child.material.customProgramCacheKey=source.customProgramCacheKey;
+      child.userData.traceMaterial={opacity:source.opacity,transparent:source.transparent};child.material.transparent=true;child.material.opacity=reduced.matches?source.opacity:0;
+    });
+    scene.add(group);encounters.set(id,{group,center,born:activeSeconds,sourceId:item?.id,item});emptySince=null;
+  }
+  function resize() {renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();const focused=state.items.find(item=>item.id===focusId);if(focused&&!state.making)goTo(focused);else syncTraces();}
   function updateCamera() {camera.rotation.set(state.pitch,state.yaw,0,'YXZ');camera.updateMatrixWorld();}
-  function look(dx,dy) {flight=null;state.yaw-=dx*.004;state.pitch=clamp(state.pitch-dy*.004,-1.48,1.48);updateCamera();}
-  function dolly(distance) {if(!state.making){flight=null;pinchRemaining=clamp(pinchRemaining+distance,-28,28);}}
-  function goHome() {flight=null;pinchRemaining=0;camera.position.set(0,0,22);state.yaw=0;state.pitch=0;updateCamera();lastRegion='';regionsAround();syncTraces();onMove();}
+  function look(dx,dy) {emptySince=null;flight=null;state.yaw-=dx*.004;state.pitch=clamp(state.pitch-dy*.004,-1.48,1.48);updateCamera();}
+  function dolly(distance) {if(!state.making){emptySince=null;flight=null;pinchRemaining=clamp(pinchRemaining+distance,-28,28);}}
+  function goHome() {emptySince=null;flight=null;focusId=null;scene.fog.near=58;scene.fog.far=160;camera.far=185;camera.updateProjectionMatrix();pinchRemaining=0;camera.position.set(0,0,22);state.yaw=0;state.pitch=0;updateCamera();lastRegion='';regionsAround();syncTraces();onMove();}
   function goTo(item) {
-    flight=null;pinchRemaining=0;
+    emptySince=null;flight=null;pinchRemaining=0;
+    introduced.set(item.id,activeSeconds-8);
     const space=placement(item),q=new THREE.Quaternion().fromArray(space.rotation);
-    camera.position.copy(V(...space.position)).add(V(0,0,23).applyQuaternion(q));
+    const distance=fitDistance((frames.get(item.id)||traceFrame(item)).radius,camera.aspect,camera.fov);
+    focusId=item.id;camera.far=Math.max(185,distance*2);camera.updateProjectionMatrix();
+    scene.fog.near=Math.max(58,distance*1.25);scene.fog.far=Math.max(160,distance*2);
+    camera.position.copy(centerOf(item)).add(V(0,0,distance).applyQuaternion(q));
     euler.setFromQuaternion(q,'YXZ');state.yaw=euler.y;state.pitch=euler.x;updateCamera();regionsAround();syncTraces();
   }
   function visitEnvironment(id){
+    emptySince=null;focusId=null;scene.fog.near=58;scene.fog.far=160;
     const env=environmentById(id),target=V(...env.center.map((n,i)=>n+Math.round((camera.position.getComponent(i)-n)/240)*240)).add(V(0,1,32));
     if(reduced.matches){camera.position.copy(target);state.yaw=0;state.pitch=0;updateCamera();regionsAround();syncTraces();return;}
     flight={start:camera.position.clone(),target,yaw:Math.atan2(Math.sin(state.yaw),Math.cos(state.yaw)),pitch:state.pitch,age:0};pinchRemaining=0;
@@ -258,16 +352,35 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     if(value){const group=paintTrace(value,true);preview.add(group);}
   }
   function drawingPoint(x,y) {
+    camera.updateMatrixWorld();
     const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/innerWidth*2-1,-y/innerHeight*2+1),camera);
+    const normal=camera.getWorldDirection(V()),center=camera.position.clone().addScaledVector(normal,23);
+    if(!draft.strokes.length){
+      draft.space.position=center.toArray();draft.space.rotation=camera.quaternion.toArray();draft.x=center.x;draft.y=center.z;
+    }
     const q=new THREE.Quaternion().fromArray(draft.space.rotation);
-    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(V(0,0,1).applyQuaternion(q),V(...draft.space.position));
+    const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(normal,center);
     const hit=ray.ray.intersectPlane(plane,V());if(!hit)return null;
     hit.sub(V(...draft.space.position)).applyQuaternion(q.invert());
-    return [clamp(hit.x/.03,-2900,2900),clamp(-hit.y/.03,-2900,2900),.5];
+    if(Math.max(Math.abs(hit.x),Math.abs(hit.y),Math.abs(hit.z))>87)return null;
+    return [hit.x/.03,-hit.y/.03,.5,hit.z/.03];
   }
   function finishDrawing() {state.making=false;showDraft(null);}
+  function releaseHere(item) {
+    const space=sourceSpace(item);localPlacements.set(item.id,space);
+    introduced.set(item.id,activeSeconds-8);focusId=null;
+    const group=traces.get(item.id);
+    if(group){group.position.fromArray(space.position);group.quaternion.fromArray(space.rotation);}
+    syncTraces();
+  }
   function ripple(item) {uniforms.uRipple.value.fromArray(placement(item).position);uniforms.uRippleStart.value=state.time;}
-  function setItems(items) {state.items=items;syncTraces();}
+  function setItems(items,preferences=curation) {
+    curation=preferences;
+    if(layout.size!==items.length||items.some(item=>!layout.has(item.id))){
+      layout=layoutTraces(items);frames.clear();for(const item of items)frames.set(item.id,traceFrame(item));
+    }
+    state.items=items;regionsAround();syncTraces();
+  }
   function setKey(key,down){if(down){flight=null;keys.add(key.toLowerCase());}else keys.delete(key.toLowerCase());}
   function stopKeys(){keys.clear();pinchRemaining=0;flight=null;}
   function createLoopCapture(width,height){
@@ -298,8 +411,9 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
     };
   }
   function frame(now) {
-    const dt=Math.min((now-last)/1000,.04);last=now;
+    const elapsed=(now-last)/1000,dt=Math.min(elapsed,.04);last=now;
     if(!document.hidden) {
+      activeSeconds+=elapsed;revealTraces();
       if(!state.paused)state.time+=dt;uniforms.uTime.value=state.time;
       if(!state.paused)animateReleases(dt);
       if(!state.making&&flight){
@@ -307,7 +421,7 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         camera.position.lerpVectors(flight.start,flight.target,ease);state.yaw=flight.yaw*(1-ease);state.pitch=flight.pitch*(1-ease);
         state.travel+=before.distanceTo(camera.position);updateCamera();regionsAround();syncTraces();
         if(t===1)flight=null;
-      }else if(!state.making) {
+      }else {
         const turn=dt*.9;
         if(keys.has('arrowleft'))state.yaw+=turn;if(keys.has('arrowright'))state.yaw-=turn;
         if(keys.has('arrowup'))state.pitch=clamp(state.pitch+turn,-1.48,1.48);if(keys.has('arrowdown'))state.pitch=clamp(state.pitch-turn,-1.48,1.48);
@@ -321,17 +435,19 @@ export function createWorld(canvas,{onMove=()=>{},onFrame=()=>{}}={}) {
         movement.multiplyScalar(dt).addScaledVector(direction,pinchStep);camera.position.add(movement);state.travel+=movement.length();camera.position.clampScalar(-49000,49000);
         regionsAround();if(now-lastSync>600){syncTraces();lastSync=now;}
       }
-      animateGhosts(now);
+      updateEncounters();animateGhosts(now);
       renderWorld(renderer,scene,preview,camera);
       if(++displayCounter%8===0){state.environment=environmentAt(camera.position.toArray()).primary;onFrame({yaw:state.yaw,position:camera.position,travel:state.travel,environment:state.environment});}
     }
     requestAnimationFrame(frame);
   }
-  addEventListener('resize',resize);addEventListener('blur',stopKeys);document.addEventListener('visibilitychange',stopKeys);
+  addEventListener('resize',resize);addEventListener('blur',stopKeys);document.addEventListener('visibilitychange',()=>{stopKeys();last=performance.now();});
   reduced.addEventListener('change',e=>{if(e.matches){state.paused=true;state.speed=0;}onMove();});
   resize();updateCamera();regionsAround();requestAnimationFrame(frame);
-  return {state,camera,renderer,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,ripple,setItems,setKey,stopKeys,unfold,ghost,dismissGhost,
+  return {state,camera,renderer,placement,centerOf,look,dolly,goHome,goTo,visitEnvironment,beginDrawing,showDraft,drawingPoint,finishDrawing,releaseHere,ripple,setItems,setKey,stopKeys,unfold,ghost,dismissGhost,
     captureCanvas(){withoutGhosts(()=>renderWorld(renderer,scene,preview,camera));return canvas;},
     createLoopCapture,
-    turnAround(){flight=null;state.yaw+=Math.PI;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,geometries:renderer.info.memory.geometries};}};
+    get presence(){return presence;},
+    get audibleTraces(){return audibleTraces;},
+    turnAround(){emptySince=null;flight=null;state.yaw+=Math.PI;state.pitch=-state.pitch;updateCamera();},get stats(){return {regions:regions.size,traces:traces.size,encounters:encounters.size,encountersCreated:encounterSequence,geometries:renderer.info.memory.geometries};}};
 }

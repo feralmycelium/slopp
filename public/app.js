@@ -6,12 +6,16 @@ import {ENVIRONMENTS,environmentById,makeSurprise,environmentAt} from './environ
 import {createIdleControls} from './idle.js';
 import {invitationGesture,createInvitationClock} from './invitation.js';
 import {createSoundController,soundAvailable} from './sound/score.js';
+import {chooseTrace,traceFrame} from './space.js';
+import {setupGuide} from './guide.js';
 
 const $=id=>document.getElementById(id);
 const SOUND_FAILED='Sound could not load. Tap the speaker to try again.',SOUND_PAUSED='Sound paused. Tap the speaker to bring it back.';
 const canvas=$('world'),draftKey='untranslatable-spatial-draft-v1';
+const drawingSpeed=10;
+let paceBeforeDrawing=null;
 const state={items:[],cursor:0,draft:null,ink:'ink',kind:'line',saving:false,ready:false};
-let toastTimer,pointer=null,stroke=null,draftFrame=0,archiveIndex=0,archiveWork=null,archiveCanvas=null,archiveFrame=0,dialogPause=false,lastSurprise=null,paletteId=null;
+let toastTimer,pointer=null,stroke=null,draftFrame=0,strokeFrame=0,archiveIndex=0,archiveWork=null,archiveCanvas=null,archiveFrame=0,dialogPause=false,lastSurprise=null,paletteId=null,lastTrace=null;
 const sound=createSoundController({onChange:renderSound,seed:Number(new URLSearchParams(location.search).get('seed'))||1});
 let lastTravel=null;
 const touches=new Map();let pinchGap=0;
@@ -19,18 +23,19 @@ const touchGap=()=>{const [a,b]=[...touches.values()];return Math.hypot(a.x-b.x,
 const soundSample=event=>({x:event.clientX/innerWidth,y:event.clientY/innerHeight,pressure:event.pressure||.5,kind:state.kind});
 const radii=new WeakMap();
 function drawingRadius(item){
-  if(!radii.has(item)){let r=0;for(const s of item.strokes||[])for(const p of s.points||[])r=Math.max(r,Math.hypot(p[0],p[1]));radii.set(item,Math.max(1,r*.03));}
+  if(!radii.has(item))radii.set(item,traceFrame(item).radius);
   return radii.get(item);
 }
 function soundSurroundings(position){
   const e=environmentAt(position.toArray());sound.environment({primary:e.primary.id,neighbour:e.neighbour.id,blend:e.blend});
+  sound.presence(world.presence);
   if(!sound.state.wanted)return;
   const cam=world.camera,v=cam.position.clone(),tanHalf=Math.tan(cam.fov*Math.PI/360);let best=0,id=null,x=0,salient=null;
-  for(const item of state.items){
-    const p=item.space?.position;if(!p)continue;
+  for(const {item,center,scale} of world.audibleTraces){
+    const p=center.toArray();
     v.set(p[0],p[1],p[2]).applyMatrix4(cam.matrixWorldInverse);const depth=-v.z;if(depth<.5)continue;
     v.set(p[0],p[1],p[2]).project(cam);if(Math.abs(v.x)>1.05||Math.abs(v.y)>1.05)continue;
-    const frac=drawingRadius(item)/(depth*tanHalf),area=Math.min(1,frac*frac/cam.aspect);
+    const frac=drawingRadius(item)*scale/(depth*tanHalf),area=Math.min(1,frac*frac/cam.aspect);
     if(area>best){best=area;id=item.id;x=Math.max(-1,Math.min(1,v.x));salient=item;}
   }
   sound.salience(best,id,{x,item:salient});
@@ -64,8 +69,9 @@ for(const type of ['keydown','touchstart'])addEventListener(type,()=>invitation.
 document.addEventListener('click',event=>{if(event.target.closest?.('button'))invitation.activity();},{capture:true});
 window.manuscript={state,world,get ready(){return state.ready;}};
 window.manuscript.sound=sound;
+const guide=setupGuide({panel:$('guide'),toggle:$('help-toggle'),close:$('guide-close')});
 const wakeControls=createIdleControls({
-  blocked:()=>world.state.making||state.saving||pointer!==null||!!document.querySelector('dialog[open]')||document.activeElement?.matches(':focus-visible:not(#world)'),
+  blocked:()=>guide.open||world.state.making||state.saving||pointer!==null||!!document.querySelector('dialog[open]')||document.activeElement?.matches(':focus-visible:not(#world)'),
   change:hidden=>document.body.classList.toggle('is-idle',hidden)
 });
 for(const type of ['pointermove','pointerdown','pointerup','pointercancel','keydown','keyup','wheel','focusin'])
@@ -91,9 +97,14 @@ function toast(message){$('status').textContent=message;$('status').classList.ad
 function updateControls(){
   $('speed').value=world.state.speed;
   $('speed-label').textContent=world.state.speed===0?'still':world.state.speed<16?'barely':world.state.speed<40?'slowly':world.state.speed<75?'flowing':'flying';
+  $('drawing-speed').value=world.state.speed;
+  $('drawing-speed-label').textContent=$('speed-label').textContent;
   $('pause').setAttribute('aria-pressed',String(world.state.paused));
   $('pause').setAttribute('aria-label',world.state.paused?'Resume motion':'Pause motion');
   $('pause').innerHTML=world.state.paused?'<svg viewBox="0 0 24 24"><path d="m9 5 10 7-10 7z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M8 6v12M16 6v12"/></svg>';
+  const drifting=!world.state.paused&&world.state.speed>0;
+  $('drawing-drift').textContent=drifting?'Pause drift':'Start drifting';
+  $('drawing-drift').setAttribute('aria-pressed',String(drifting));
 }
 function usePalette(env){
   if(paletteId===env.id)return;paletteId=env.id;
@@ -116,20 +127,27 @@ function updateDraft(){
   if(!draftFrame)draftFrame=requestAnimationFrame(()=>{draftFrame=0;world.showDraft(state.draft);});
 }
 function make(){
+  if(guide.open)guide.hide();
   if(state.saving)return;
+  paceBeforeDrawing={speed:world.state.speed,paused:world.state.paused};
+  world.state.speed=Math.min(world.state.speed,drawingSpeed);
   state.draft=world.beginDrawing(state.draft);
   usePalette(environmentById(state.draft.space.environment));
   document.body.classList.add('is-making');$('making').hidden=false;$('drawing-note').hidden=false;
-  updateDraft();canvas.focus();wandered();
+  updateDraft();updateControls();canvas.focus();wandered();
 }
 function closeDrawing(){
   if(state.saving)return;
+  pointerEnd();
   if(!state.draft?.strokes.length)state.draft=null;
   saveDraft();world.finishDrawing();document.body.classList.remove('is-making');
   $('making').hidden=true;$('drawing-note').hidden=true;canvas.focus();
 }
+let curation={};
 async function sync(){
   try{
+    const preferences=await fetch('/curation.json',{cache:'no-store'});
+    if(preferences.ok)curation=await preferences.json();
     let more=true;
     while(more){
       const response=await fetch('/api/world?cursor='+state.cursor);
@@ -139,7 +157,7 @@ async function sync(){
       state.cursor=data.cursor;more=data.hasMore;
       $('trace-count').textContent=data.total||'';
     }
-    world.setItems(state.items);state.ready=true;
+    world.setItems(state.items,curation);state.ready=true;
   }catch{state.ready=true;}
   invitation.start();
 }
@@ -148,12 +166,13 @@ async function storeMark(mark){
   const data=await response.json();
   if(!response.ok)throw new Error(data.message||'Your drawing is kept here. Try releasing it again.');
   if(!state.items.some(x=>x.id===data.item.id))state.items.push(data.item);
-  world.setItems(state.items);world.ripple(data.item);
+  world.setItems(state.items,curation);world.releaseHere(data.item);world.ripple(data.item);
   $('trace-count').textContent=state.items.length;sync();
   return data.item;
 }
 async function publish(){
   if(state.saving||!state.draft?.strokes.length)return;
+  pointerEnd();
   state.draft.strokes=state.draft.strokes.filter(s=>s.points.length>=2);
   if(!state.draft.strokes.length)return;
   state.saving=true;updateDraft();$('leave').textContent='Releasing…';
@@ -162,6 +181,10 @@ async function publish(){
     const item=await storeMark(mark);world.unfold(item);
 
     state.draft=null;state.saving=false;saveDraft();closeDrawing();
+    if(paceBeforeDrawing){
+      world.state.speed=paceBeforeDrawing.speed;world.state.paused=paceBeforeDrawing.paused;
+      paceBeforeDrawing=null;updateControls();
+    }
     $('trace-count').textContent=state.items.length;
     toast('Yours, now part of everything.');sync();
   }catch(error){state.saving=false;saveDraft();toast(error.message);updateDraft();}
@@ -186,6 +209,18 @@ async function surprise(){
   wandered();
 }
 function totalPoints(){return state.draft.strokes.reduce((n,s)=>n+s.points.length,0);}
+function sampleStroke(){
+  if(!stroke||!pointer)return;
+  const p=world.drawingPoint(pointer.x,pointer.y),last=stroke.points.at(-1);
+  if(!p){
+    world.stopKeys();world.state.paused=true;updateControls();
+    toast('This trail has reached its edge. Let it go, then start another.');pointerEnd();return;
+  }
+  if(Math.hypot(p[0]-last[0],p[1]-last[1],p[3]-(last[3]??0))>1.8&&stroke.points.length<512&&totalPoints()<4096){
+    p[2]=pointer.pressure||.5;stroke.points.push(p);updateDraft();
+  }
+}
+function followStroke(){strokeFrame=0;if(!stroke||!pointer)return;sampleStroke();if(stroke)strokeFrame=requestAnimationFrame(followStroke);}
 canvas.addEventListener('pointerdown',event=>{
   if(touches.size>1)return;
   if(event.button!==0||state.saving)return;
@@ -194,24 +229,24 @@ canvas.addEventListener('pointerdown',event=>{
   if(world.state.making){
     if(state.draft.strokes.length>=128||totalPoints()>=4096){toast('Let this drawing go, then start another.');return;}
     const p=world.drawingPoint(event.clientX,event.clientY);
-    if(!p)return;
+    if(!p){world.stopKeys();world.state.paused=true;updateControls();toast('This trail has reached its edge. Let it go, then start another.');pointerEnd();return;}
     stroke={kind:state.kind,ink:state.ink,seed:crypto.getRandomValues(new Uint32Array(1))[0],points:[p]};
     state.draft.strokes.push(stroke);
     sound.strokeStart(soundSample(event));
+    strokeFrame=requestAnimationFrame(followStroke);
   }
 });
 canvas.addEventListener('pointermove',event=>{
   if(!pointer||pointer.id!==event.pointerId)return;
+  const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
+  pointer.x=event.clientX;pointer.y=event.clientY;pointer.pressure=event.pressure;
   if(world.state.making&&stroke){
     sound.strokeMove(soundSample(event));
-    const p=world.drawingPoint(event.clientX,event.clientY),last=stroke.points.at(-1);
-    if(p&&Math.hypot(p[0]-last[0],p[1]-last[1])>1.8&&stroke.points.length<512&&totalPoints()<4096){
-      p[2]=event.pressure||.5;stroke.points.push(p);updateDraft();
-    }
-  }else if(!world.state.making&&touches.size<2){const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;world.look(dx,dy);sound.look(dx,dy);}
-  pointer.x=event.clientX;pointer.y=event.clientY;
+    sampleStroke();
+  }else if(!world.state.making&&touches.size<2){world.look(dx,dy);sound.look(dx,dy);}
 });
 function pointerEnd(){
+  cancelAnimationFrame(strokeFrame);strokeFrame=0;
   if(stroke){
     sound.strokeEnd();
     if(stroke.points.length<2)state.draft.strokes=state.draft.strokes.filter(s=>s!==stroke);
@@ -241,16 +276,22 @@ $('make').onclick=make;$('cancel').onclick=closeDrawing;$('leave').onclick=publi
 $('undo').onclick=()=>{if(state.saving)return;state.draft.strokes.pop();updateDraft();saveDraft();};
 
 document.querySelectorAll('[data-kind]').forEach(button=>button.onclick=()=>{state.kind=button.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));});
-$('speed').oninput=event=>{world.state.speed=Number(event.target.value);world.state.paused=false;updateControls();wandered();};
+$('speed').oninput=$('drawing-speed').oninput=event=>{world.state.speed=Number(event.target.value);world.state.paused=false;updateControls();wandered();};
 $('pause').onclick=()=>{world.stopKeys();world.state.paused=!world.state.paused;updateControls();};
+$('drawing-drift').onclick=()=>{
+  world.stopKeys();const drifting=!world.state.paused&&world.state.speed>0;
+  world.state.paused=drifting;if(!drifting&&world.state.speed===0)world.state.speed=drawingSpeed;
+  updateControls();
+};
 $('elsewhere').onclick=()=>{const i=ENVIRONMENTS.findIndex(e=>e.id===world.state.environment.id);world.visitEnvironment(ENVIRONMENTS[(i+1)%ENVIRONMENTS.length].id);wandered();};
 $('turn').onclick=()=>{world.turnAround();sound.turn();wandered();};
 function renderSound(s){
   const button=$('sound'),started=s.wanted&&!s.loading;
   if(started&&!s.needsTap&&!s.error&&[SOUND_FAILED,SOUND_PAUSED].includes($('status').textContent))$('status').classList.remove('visible');
   button.dataset.state=s.loading?'loading':!s.wanted?'off':s.needsTap?'restore':s.muted?'muted':'on';
+  $('sound-label').textContent=s.error?'Retry sound':{loading:'Loading sound…',off:'Turn sound on',restore:'Resume sound',muted:'Turn sound on',on:'Turn sound off'}[button.dataset.state];
   button.setAttribute('aria-pressed',String(s.wanted&&!s.muted&&!s.needsTap));
-  button.setAttribute('aria-label',{loading:'Loading sound',off:'Start sound',restore:'Tap to restore sound',muted:'Unmute sound',on:'Mute sound'}[button.dataset.state]);
+  button.setAttribute('aria-label',$('sound-label').textContent);
   button.toggleAttribute('aria-busy',s.loading);
   $('volume').hidden=$('sound-reset').hidden=!started;
   document.body.classList.toggle('sound-on',started);
@@ -269,7 +310,7 @@ $('sound-reset').onclick=()=>sound.reset();
 document.addEventListener('pointerdown',()=>{if(sound.state.needsTap)sound.resume();},{capture:true});
 soundAvailable().then(ok=>{$('sound').hidden=!ok;});
 $('home').onclick=()=>{world.goHome();toast('Back at the beginning.');};
-$('latest').onclick=()=>{if(state.items.length){world.goTo(state.items.at(-1));wandered();}else toast('The next trace could be yours.');};
+$('latest').onclick=()=>{if(world.state.making||state.saving)return;const item=chooseTrace(state.items,lastTrace,Math.random,curation);if(item){lastTrace=item.id;world.goTo(item);wandered();}else toast('The next trace could be yours.');};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{toast('Full screen is not available in this window.');}};
 document.querySelectorAll('[data-move]').forEach(button=>{
   button.onpointerdown=event=>{button.setPointerCapture(event.pointerId);world.setKey(button.dataset.move,true);wandered();};
@@ -280,7 +321,6 @@ addEventListener('keydown',event=>{
   if(event.key==='Escape'&&world.state.making){closeDrawing();return;}
   if(event.key.toLowerCase()==='m'&&!event.repeat&&!world.state.making){make();return;}
   if(event.code==='Space'&&!event.repeat&&event.target.tagName!=='BUTTON'){event.preventDefault();$('pause').click();return;}
-  if(world.state.making)return;
   if(['w','a','s','d','q','e','arrowleft','arrowright','arrowup','arrowdown'].includes(event.key.toLowerCase())){
     event.preventDefault();world.setKey(event.key,true);wandered();
   }
