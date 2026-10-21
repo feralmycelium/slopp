@@ -26,10 +26,7 @@ function drawingRadius(item){
   if(!radii.has(item))radii.set(item,traceFrame(item).radius);
   return radii.get(item);
 }
-function soundSurroundings(position){
-  const e=environmentAt(position.toArray());sound.environment({primary:e.primary.id,neighbour:e.neighbour.id,blend:e.blend});
-  sound.presence(world.presence);
-  if(!sound.state.wanted)return;
+function traceInView(){
   const cam=world.camera,v=cam.position.clone(),tanHalf=Math.tan(cam.fov*Math.PI/360);let best=0,id=null,x=0,salient=null;
   for(const {item,center,scale} of world.audibleTraces){
     const p=center.toArray();
@@ -38,7 +35,34 @@ function soundSurroundings(position){
     const frac=drawingRadius(item)*scale/(depth*tanHalf),area=Math.min(1,frac*frac/cam.aspect);
     if(area>best){best=area;id=item.id;x=Math.max(-1,Math.min(1,v.x));salient=item;}
   }
+  return {best,id,x,salient};
+}
+function soundSurroundings(position,view){
+  const e=environmentAt(position.toArray());sound.environment({primary:e.primary.id,neighbour:e.neighbour.id,blend:e.blend});
+  sound.presence(world.presence);
+  if(!sound.state.wanted)return;
+  const {best,id,x,salient}=view;
   sound.salience(best,id,{x,item:salient});
+}
+// The Report button follows the drawing that fills most of the view.
+const REPORT_AREA=.04;let reportTarget=null,reportConfirm=0;
+function updateReport(view){
+  const id=!world.state.making&&view.best>=REPORT_AREA?view.id:null;
+  if(reportConfirm&&id!==reportTarget){clearTimeout(reportConfirm);reportConfirm=0;$('report').textContent='Report';}
+  if(!reportConfirm)reportTarget=id;
+  $('report').hidden=!reportTarget;
+}
+async function report(){
+  const id=reportTarget;if(!id)return;
+  if(!reportConfirm){
+    $('report').textContent='Report this drawing?';
+    reportConfirm=setTimeout(()=>{reportConfirm=0;$('report').textContent='Report';},5000);return;
+  }
+  clearTimeout(reportConfirm);reportConfirm=0;$('report').textContent='Report';
+  try{
+    const response=await fetch('/api/marks/'+id+'/report',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+    toast(response.ok?'Thank you. Someone will take a look.':response.status===429?'Thank you. Please try again a little later.':'That report did not go through. Please try again.');
+  }catch{toast('That report did not go through. Please try again.');}
 }
 function soundMotion(travel){
   const t=performance.now()/1000;
@@ -49,7 +73,8 @@ const world=createWorld(canvas,{
   onMove:()=>updateControls(),
   onFrame:({yaw,position,travel,environment})=>{
     soundMotion(travel);
-    soundSurroundings(position);
+    const view=traceInView();
+    soundSurroundings(position,view);updateReport(view);
     document.querySelector('.needle').style.transform='rotate('+(-yaw*180/Math.PI)+'deg)';
     const distance=Math.hypot(position.x,position.y,position.z-22);
     $('place').textContent=distance<12?'the beginning':Math.round(distance)+' from the beginning';
@@ -157,9 +182,15 @@ async function sync(){
       state.cursor=data.cursor;more=data.hasMore;
       $('trace-count').textContent=data.total||'';
     }
-    world.setItems(state.items,curation);state.ready=true;
+    world.setItems(state.items,curation);state.ready=true;openLinkedTrace();
   }catch{state.ready=true;}
   invitation.start();
+}
+let linkedTrace=new URLSearchParams(location.search).get('d');
+function openLinkedTrace(){
+  if(!linkedTrace)return;
+  const item=state.items.find(x=>x.id===linkedTrace);linkedTrace=null;
+  if(item&&!world.state.making){lastTrace=item.id;world.goTo(item);wandered();}
 }
 async function storeMark(mark){
   const response=await fetch('/api/marks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(mark)});
@@ -272,7 +303,7 @@ canvas.addEventListener('pointermove',event=>{
   world.dolly(distance);sound.pinch(distance);wandered();
 },{capture:true});
 for(const type of ['pointerup','pointercancel'])canvas.addEventListener(type,event=>touches.delete(event.pointerId),{capture:true});
-$('make').onclick=make;$('cancel').onclick=closeDrawing;$('leave').onclick=publish;$('surprise').onclick=surprise;
+$('report').onclick=report;$('make').onclick=make;$('cancel').onclick=closeDrawing;$('leave').onclick=publish;$('surprise').onclick=surprise;
 $('undo').onclick=()=>{if(state.saving)return;state.draft.strokes.pop();updateDraft();saveDraft();};
 
 document.querySelectorAll('[data-kind]').forEach(button=>button.onclick=()=>{state.kind=button.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));});
