@@ -15,6 +15,13 @@
       "when": 1792103585436,
       "tag": "0001_perpetual_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792589163137,
+      "tag": "0002_moderation",
+      "breakpoints": true
     }
   ]
 }

@@ -28,9 +28,26 @@ export const marks = sqliteTable(
     cellX: integer("cell_x").notNull(),
     cellY: integer("cell_y").notNull(),
     payload: text("payload").notNull(),
+    hiddenAt: text("hidden_at"),
+    hiddenReason: text("hidden_reason"),
   },
   (table) => [
     uniqueIndex("marks_id_unique").on(table.id),
     index("marks_cell_index").on(table.cellX, table.cellY),
+  ],
+);
+
+export const reports = sqliteTable(
+  "reports",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    markId: text("mark_id").notNull(),
+    createdAt: text("created_at").notNull(),
+    reason: text("reason"),
+    reporterHash: text("reporter_hash").notNull(),
+  },
+  (table) => [
+    uniqueIndex("reports_mark_reporter_unique").on(table.markId, table.reporterHash),
+    index("reports_reporter_index").on(table.reporterHash, table.createdAt),
   ],
 );

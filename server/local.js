@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { Database } from "bun:sqlite";
 
 import { handleApi } from "./api.js";
+import { handlePages } from "./pages.js";
 import { applySchema, createD1Adapter } from "./sqlite.js";
 
 const projectDirectory = fileURLToPath(new URL("..", import.meta.url));
@@ -26,12 +27,12 @@ const staticResponse = (request, directory, prefix = "/") => {
   return new Response(Bun.file(filename));
 };
 
-export const createApp = ({ db, assetsDirectory = publicDirectory, soundAssetsDirectory = soundDirectory }) => ({
-  fetch: (request) => {
+export const createApp = ({ db, assetsDirectory = publicDirectory, soundAssetsDirectory = soundDirectory, env = { ADMIN_TOKEN: process.env.ADMIN_TOKEN, REPORT_SALT: process.env.REPORT_SALT } }) => ({
+  fetch: async (request) => {
     const { pathname } = new URL(request.url);
-    if (pathname.startsWith("/api/")) return handleApi(request, db);
+    if (pathname.startsWith("/api/")) return handleApi(request, db, env);
     if (pathname.startsWith("/sound-assets/")) return staticResponse(request, soundAssetsDirectory, "/sound-assets/");
-    return staticResponse(request, assetsDirectory);
+    return (await handlePages(request, db)) ?? staticResponse(request, assetsDirectory);
   },
 });
 
