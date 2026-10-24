@@ -1,6 +1,7 @@
 import { RULES, boundsOf, placementIssue } from "../public/rules.js";
 import { ENVIRONMENTS } from "../public/environments.js";
 import { collectAnalytics } from './analytics.js';
+import { handleAdmin, reportMark } from './moderation.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_PAYLOAD_BYTES = 256 * 1024;
@@ -66,7 +67,7 @@ const parseMark = (value) => {
 
 const selectById = async (db, id) => db.prepare(`SELECT ${ITEM_FIELDS} FROM marks WHERE id = ?`).bind(id).first();
 
-const selectAll = async (db) => rows(db.prepare(`SELECT ${ITEM_FIELDS} FROM marks ORDER BY seq ASC`).bind());
+const selectAll = async (db) => rows(db.prepare(`SELECT ${ITEM_FIELDS} FROM marks WHERE hidden_at IS NULL ORDER BY seq ASC`).bind());
 
 const parseInteger = (value, fallback, maximum) => {
   if (value === null) return fallback;
@@ -158,8 +159,8 @@ const world = async (url, db) => {
   const limit = parseInteger(url.searchParams.get("limit"), 100, 100);
   if (cursor === null || limit === null || limit < 1) return badRequest("invalid_pagination");
   try {
-    const result = await rows(db.prepare(`SELECT ${ITEM_FIELDS} FROM marks WHERE seq > ? ORDER BY seq ASC LIMIT ?`).bind(cursor, limit + 1));
-    const total = await db.prepare("SELECT COUNT(*) AS total FROM marks").bind().first();
+    const result = await rows(db.prepare(`SELECT ${ITEM_FIELDS} FROM marks WHERE hidden_at IS NULL AND seq > ? ORDER BY seq ASC LIMIT ?`).bind(cursor, limit + 1));
+    const total = await db.prepare("SELECT COUNT(*) AS total FROM marks WHERE hidden_at IS NULL").bind().first();
     const hasMore = result.length > limit;
     const items = result.slice(0, limit).map(itemFromRow);
     return json({ items, cursor: items.at(-1)?.seq ?? cursor, hasMore, total: total.total });
@@ -177,8 +178,11 @@ const worldExport = async (db) => {
   }
 };
 
-export const handleApi = async (request, db) => {
+export const handleApi = async (request, db, env = {}) => {
   const url = new URL(request.url);
+  if (url.pathname.startsWith("/api/admin/")) return handleAdmin(request, db, env, url);
+  const report = url.pathname.match(/^\/api\/marks\/([^/]+)\/report$/);
+  if (request.method === "POST" && report) return reportMark(request, db, env, report[1]);
   if (request.method === 'POST' && url.pathname === '/api/analytics') return collectAnalytics(request, db);
   if (request.method === "GET" && url.pathname === "/api/world") return world(url, db);
   if (request.method === "GET" && url.pathname === "/api/world/export") return worldExport(db);

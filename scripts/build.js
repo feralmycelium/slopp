@@ -16,6 +16,15 @@ await mkdir(root+'/dist/.openai',{recursive:true});
 const result=await Bun.build({entrypoints:[root+'/server/worker.js'],outdir:root+'/dist/server',naming:'index.js',target:'browser',format:'esm',minify:true});
 if(!result.success)throw new Error(result.logs.join('\n'));
 await cp(root+'/public',root+'/dist/client',{recursive:true});
+const gaId=process.env.GA_MEASUREMENT_ID?.trim();
+if(gaId){
+  if(!/^G-[A-Z0-9]{4,20}$/.test(gaId))throw new Error('GA_MEASUREMENT_ID must look like G-XXXXXXXXXX.');
+  const page=root+'/dist/client/index.html',html=await readFile(page,'utf8');
+  const meta=/<meta name="ga-measurement-id" content="([^"]*)">/;
+  const found=html.match(meta);
+  if(!found)throw new Error('index.html has no ga-measurement-id meta to fill.');
+  if(found[1]!==gaId)await writeFile(page,html.replace(meta,'<meta name="ga-measurement-id" content="'+gaId+'">'));
+}
 try{await cp(root+'/music',root+'/dist/client/sound-assets',{recursive:true});}catch(error){if(error.code!=='ENOENT')throw error;}
 await cp(root+'/drizzle',root+'/dist/.openai/drizzle',{recursive:true});
 let hosting={d1:'DB',r2:null};

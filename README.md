@@ -86,6 +86,22 @@ Depth requires spatial metadata and is bounded to ±3,000, like x/y offsets.
 Existing paper records remain renderable. The API has
 no visitor edit or delete operation.
 
+## Moderation, search and optional Google Analytics
+
+Visitors can report the drawing in view (`POST /api/marks/:id/report`, anonymous
+salted IP hash, one report per drawing per address, ten an hour). Hiding never
+deletes: hidden marks keep their row and leave `/api/world`, the export, the
+sitemap and `/d/:id`. Admin routes under `/api/admin/` need the Worker secret
+`ADMIN_TOKEN` (optional `REPORT_SALT`) and are 404 without it. Use
+`SLOPP_ADMIN_TOKEN=… SLOPP_BASE_URL=https://sloppworld.com node scripts/moderate.mjs reports|hide <id> [reason]|unhide <id>`.
+
+The Worker serves `/sitemap.xml` and a share page per drawing at `/d/:id`.
+The GA4 ID is set in `public/index.html`
+(`GA_MEASUREMENT_ID=G-… bun run build` replaces it in `dist/` when set). It loads only
+after a visitor allows cookies; About → Cookie choices changes the answer.
+The own cookie-free statistics in `public/analytics.js` are unchanged.
+`public/og-image.png` is rendered from `scripts/og-image.svg`.
+
 ## Checks
 
 The environment pass has focused tests for locality, surprise variety,
