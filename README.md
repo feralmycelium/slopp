@@ -96,8 +96,8 @@ sitemap and `/d/:id`. Admin routes under `/api/admin/` need the Worker secret
 `SLOPP_ADMIN_TOKEN=… SLOPP_BASE_URL=https://sloppworld.com node scripts/moderate.mjs reports|hide <id> [reason]|unhide <id>`.
 
 The Worker serves `/sitemap.xml` and a share page per drawing at `/d/:id`.
-Google Analytics is off until `<meta name="ga-measurement-id">` holds a GA4 ID
-(or `GA_MEASUREMENT_ID=G-… bun run build` fills it in `dist/`). It loads only
+The GA4 ID is set in `public/index.html`
+(`GA_MEASUREMENT_ID=G-… bun run build` replaces it in `dist/` when set). It loads only
 after a visitor allows cookies; About → Cookie choices changes the answer.
 The own cookie-free statistics in `public/analytics.js` are unchanged.
 `public/og-image.png` is rendered from `scripts/og-image.svg`.
